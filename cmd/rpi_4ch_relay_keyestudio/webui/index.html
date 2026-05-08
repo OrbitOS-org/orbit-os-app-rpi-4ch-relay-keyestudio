@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>RPI 4channel-Relay Controller - Keyestudio</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #000000; color: #1a1a1a; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+    header { background: #FEDC19; width: 100%; max-width: 520px; border-radius: 12px; padding: 1rem 1.4rem; display: flex; align-items: center; gap: .8rem; margin-bottom: 1.8rem; border: 2px solid #E5C600; }
+    header .dot { width: 18px; height: 18px; border-radius: 50%; background: #e53935; flex-shrink: 0; }
+    h1 { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; letter-spacing: .02em; }
+    .sub { font-size: .8rem; color: #555; }
+    .board-warn { background: #fffce6; border: 1px solid #FEDC19; color: #7a5c00; border-radius: 8px; padding: .6rem 1rem; font-size: .85rem; margin-bottom: 1.2rem; width: 100%; max-width: 520px; display: none; }
+    .board-warn.show { display: block; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; max-width: 520px; }
+    .relay-card { background: #2278CC; border: 2px solid #0D4B8A; border-radius: 12px; padding: 1.2rem 1rem; display: flex; flex-direction: column; gap: .7rem; transition: background .2s, border-color .2s, box-shadow .2s; }
+    .relay-card:hover { background: #2A82D6; border-color: #0D4B8A; }
+    .relay-card.on { background: #2278CC; border-color: #0D4B8A; box-shadow: 0 2px 10px rgba(13,75,138,.45); }
+    .relay-header { display: flex; justify-content: space-between; align-items: center; }
+    .relay-label { font-weight: 700; font-size: .95rem; color: #fff; }
+    .relay-gpio { display: none; }
+    .toggle { position: relative; width: 52px; height: 28px; cursor: pointer; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: #ddd; border-radius: 28px; transition: background .2s; }
+    .slider::before { content: ''; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+    input:checked + .slider { background: #333; }
+    input:checked + .slider::before { transform: translateX(24px); background: #FEDC19; }
+    .relay-state { font-size: .78rem; color: rgba(255,255,255,.6); font-weight: 500; }
+    .relay-card.on .relay-state { color: #FEDC19; font-weight: 700; }
+    .modbus-info { margin-top: 1.5rem; background: #FEDC19; border: 2px solid #E5C600; border-radius: 10px; padding: .6rem .9rem; width: 100%; max-width: 520px; font-size: .75rem; color: #1a1a1a; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; transition: background .4s; }
+    .status-dot.active { background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,.6); }
+    .modbus-info h3 { font-size: .75rem; font-weight: 700; color: #1a1a1a; margin: 0; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+    .modbus-info h3::after { content: '▸'; transition: transform .2s; }
+    .modbus-info.open h3::after { transform: rotate(90deg); }
+    .modbus-body { display: none; margin-top: .35rem; }
+    .modbus-info.open .modbus-body { display: block; }
+    .modbus-cols { display: flex; gap: 1rem; align-items: flex-start; }
+    .modbus-cols table { flex: 1; border-collapse: collapse; width: 50%; vertical-align: top; }
+    .modbus-cols td { padding: .15rem .3rem; white-space: nowrap; }
+    .modbus-cols td:first-child { color: #5a4500; font-weight: 600; padding-right: .5rem; width: 50%; }
+    .port-row { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid rgba(0,0,0,.12); }
+    .port-row label { font-size: .72rem; font-weight: 600; color: #5a4500; white-space: nowrap; }
+    .port-row input { width: 70px; padding: .2rem .4rem; border: 1px solid #c8a800; border-radius: 5px; font-size: .72rem; background: #fff8cc; color: #1a1a1a; }
+    .port-row button { padding: .2rem .6rem; background: #1a1a1a; color: #FEDC19; border: none; border-radius: 5px; font-size: .72rem; font-weight: 700; cursor: pointer; }
+    .port-row button:hover { background: #333; }
+    .port-note { font-size: .7rem; color: #7a5c00; margin-top: .3rem; display: none; }
+    .port-note.show { display: block; }
+    .mqtt-card { margin-top: 1rem; background: #FEDC19; border: 2px solid #E5C600; border-radius: 10px; padding: .6rem .9rem; width: 100%; max-width: 520px; font-size: .75rem; color: #1a1a1a; }
+    .mqtt-card h3 { font-size: .75rem; font-weight: 700; color: #1a1a1a; margin: 0; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+    .mqtt-card h3::after { content: '▸'; transition: transform .2s; }
+    .mqtt-card.open h3::after { transform: rotate(90deg); }
+    .mqtt-body { display: none; margin-top: .5rem; }
+    .mqtt-card.open .mqtt-body { display: block; }
+    .mqtt-row { display: grid; grid-template-columns: 90px 1fr; align-items: center; column-gap: .5rem; margin-bottom: .35rem; }
+    .mqtt-row label { font-size: .72rem; color: #5a4500; font-weight: 600; }
+    .mqtt-row input[type="text"],
+    .mqtt-row input[type="password"],
+    .mqtt-row input[type="number"] { width: 100%; height: 24px; padding: 0 .4rem; border: 1px solid #c8a800; border-radius: 5px; font-size: .72rem; background: #fff8cc; color: #1a1a1a; box-sizing: border-box; appearance: none; -webkit-appearance: none; }
+    .mqtt-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #1a1a1a; }
+    .mqtt-save { display: flex; justify-content: space-between; align-items: center; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid rgba(0,0,0,.12); }
+    .mqtt-save button { padding: .2rem .7rem; background: #1a1a1a; color: #FEDC19; border: none; border-radius: 5px; font-size: .72rem; font-weight: 700; cursor: pointer; }
+    .mqtt-save button:hover { background: #333; }
+    .err { color: #c0392b; font-size: .82rem; margin-top: .5rem; display: none; }
+    .err.show { display: block; }
+    .buy-banner { display: block; margin-top: 2rem; width: 100%; max-width: 520px; border-radius: 12px; overflow: hidden; border: 2px solid #FEDC19; text-decoration: none; transition: border-color .2s, box-shadow .2s; }
+    .buy-banner:hover { border-color: #E5C600; box-shadow: 0 2px 12px rgba(254,220,25,.35); }
+    .buy-banner img { width: 100%; display: block; max-height: 320px; object-fit: cover; object-position: center; }
+    .buy-label { background: #FEDC19; color: #1a1a1a; text-align: center; font-size: .85rem; font-weight: 700; padding: .6rem; letter-spacing: .04em; }
+    .buy-banner:hover .buy-label { background: #E5C600; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="dot"></div>
+    <div>
+      <h1>RPI 4channel-Relay Controller - Keyestudio</h1>
+      <div class="sub"><a href="https://www.keyestudio.com/products/keyestudio-rpi-4channel-relay-5v-shield-for-raspberry-pi-ce-certification" target="_blank" rel="noopener" style="color:#555;text-decoration:underline;">KS0212 · Raspberry Pi 3/4/5 ↗</a></div>
+    </div>
+  </header>
+  <div class="board-warn" id="board-warn"></div>
+
+  <div class="grid" id="grid">
+    <div class="relay-card" id="card-0">
+      <div class="relay-header">
+        <div>
+          <div class="relay-label">Channel 1</div>
+          <div class="relay-gpio">GPIO 3</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="relay-0" onchange="toggle(0)"/><span class="slider"></span></label>
+      </div>
+      <div class="relay-state" id="state-0">OFF</div>
+    </div>
+    <div class="relay-card" id="card-1">
+      <div class="relay-header">
+        <div>
+          <div class="relay-label">Channel 2</div>
+          <div class="relay-gpio">GPIO 22</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="relay-1" onchange="toggle(1)"/><span class="slider"></span></label>
+      </div>
+      <div class="relay-state" id="state-1">OFF</div>
+    </div>
+    <div class="relay-card" id="card-2">
+      <div class="relay-header">
+        <div>
+          <div class="relay-label">Channel 3</div>
+          <div class="relay-gpio">GPIO 6</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="relay-2" onchange="toggle(2)"/><span class="slider"></span></label>
+      </div>
+      <div class="relay-state" id="state-2">OFF</div>
+    </div>
+    <div class="relay-card" id="card-3">
+      <div class="relay-header">
+        <div>
+          <div class="relay-label">Channel 4</div>
+          <div class="relay-gpio">GPIO 26</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="relay-3" onchange="toggle(3)"/><span class="slider"></span></label>
+      </div>
+      <div class="relay-state" id="state-3">OFF</div>
+    </div>
+  </div>
+
+  <div class="modbus-info" id="modbus-card">
+    <h3 onclick="toggle_card('modbus-card')"><span style="display:flex;align-items:center;gap:.4rem;"><span class="status-dot" id="dot-modbus"></span>MODBUS TCP</span></h3>
+    <div class="modbus-body">
+      <div class="modbus-cols">
+        <table>
+          <tr><td>Coil 0</td><td>Channel 1</td></tr>
+          <tr><td>Coil 1</td><td>Channel 2</td></tr>
+          <tr><td>Coil 2</td><td>Channel 3</td></tr>
+          <tr><td>Coil 3</td><td>Channel 4</td></tr>
+        </table>
+        <table>
+          <tr><td>FC01</td><td>Read Coils</td></tr>
+          <tr><td>FC03</td><td>Read Registers</td></tr>
+          <tr><td>FC05</td><td>Write Single Coil</td></tr>
+          <tr><td>FC06</td><td>Write Single Reg.</td></tr>
+          <tr><td>FC0F</td><td>Write Multi Coils</td></tr>
+        </table>
+      </div>
+      <div class="port-row">
+        <label style="display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:600;color:#5a4500;cursor:pointer;"><input type="checkbox" id="mb-enabled" style="width:14px;height:14px;accent-color:#1a1a1a;cursor:pointer;"/> Enable</label>
+        <div style="display:flex;align-items:center;gap:.4rem;">
+          <label for="mb-port" style="color:#5a4500;">Port</label>
+          <input type="number" id="mb-port" min="1" max="65535" value="5020"/>
+          <button onclick="savePort()">Save</button>
+        </div>
+      </div>
+      <div class="port-note" id="port-note">Restart the app to apply the new port.</div>
+    </div>
+  </div>
+  <div class="err" id="err"></div>
+
+  <div class="mqtt-card" id="mqtt-card">
+    <h3 onclick="toggle_card('mqtt-card')"><span style="display:flex;align-items:center;gap:.4rem;"><span class="status-dot" id="dot-mqtt"></span>MQTT</span></h3>
+    <div class="mqtt-body">
+      <div class="mqtt-row">
+        <label>Broker</label>
+        <input type="text" id="mqtt-broker" placeholder="192.168.1.10:1883"/>
+      </div>
+      <div class="mqtt-row">
+        <label>Username</label>
+        <input type="text" id="mqtt-user" placeholder="optional" autocomplete="off"/>
+      </div>
+      <div class="mqtt-row">
+        <label>Password</label>
+        <input type="password" id="mqtt-pass" placeholder="optional" autocomplete="new-password"/>
+      </div>
+      <div class="mqtt-row">
+        <label>Topic prefix</label>
+        <input type="text" id="mqtt-prefix" placeholder="relay4"/>
+      </div>
+      <div class="mqtt-row">
+        <label>Device ID</label>
+        <input type="text" id="mqtt-device" placeholder="hostname (auto)"/>
+      </div>
+      <div class="mqtt-save">
+        <label style="display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:600;color:#5a4500;cursor:pointer;"><input type="checkbox" id="mqtt-enabled" style="width:14px;height:14px;accent-color:#1a1a1a;cursor:pointer;"/> Enable</label>
+        <button onclick="saveMQTT()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <a href="https://www.keyestudio.com/products/keyestudio-rpi-4channel-relay-5v-shield-for-raspberry-pi-ce-certification" target="_blank" rel="noopener" class="buy-banner">
+    <img src="/img/shield.png" alt="Keyestudio KS0212 4-Channel Relay Shield"/>
+    <div class="buy-label">Get yours at keyestudio.com ↗</div>
+  </a>
+
+  <script>
+  (function () {
+    let state = [false, false, false, false];
+
+    function applyState(s) {
+      state = s;
+      for (let i = 0; i < 4; i++) {
+        const on = s[i];
+        document.getElementById('relay-' + i).checked = on;
+        document.getElementById('card-' + i).classList.toggle('on', on);
+        document.getElementById('state-' + i).textContent = on ? 'ON' : 'OFF';
+      }
+    }
+
+    function showErr(msg) {
+      const el = document.getElementById('err');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    function refresh() {
+      fetch('/api/relays')
+        .then(r => r.json())
+        .then(d => applyState(d.relays))
+        .catch(() => {});
+    }
+
+    function connectSSE() {
+      const es = new EventSource('/api/events');
+      es.onmessage = e => {
+        try { applyState(JSON.parse(e.data).relays); } catch (_) {}
+      };
+      es.onerror = () => {
+        es.close();
+        setTimeout(connectSSE, 3000);
+      };
+    }
+
+    window.toggle = function (ch) {
+      const on = document.getElementById('relay-' + ch).checked;
+      fetch('/api/relays/' + ch, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ on: on })
+      })
+        .then(r => r.json())
+        .then(d => { if (!d.ok) showErr(d.error || 'error'); else refresh(); })
+        .catch(e => showErr(String(e)));
+    };
+
+    fetch('/api/info')
+      .then(r => r.json())
+      .then(d => {
+        if (d.board_warn) {
+          const w = document.getElementById('board-warn');
+          w.textContent = d.board_warn;
+          w.classList.add('show');
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(d => {
+        if (d.modbus_port) document.getElementById('mb-port').value = d.modbus_port;
+        document.getElementById('mb-enabled').checked = d.modbus_enabled !== false;
+        const m = d.mqtt || {};
+        document.getElementById('mqtt-enabled').checked  = !!m.enabled;
+        document.getElementById('mqtt-broker').value     = m.broker       || '';
+        document.getElementById('mqtt-user').value       = m.username     || '';
+        document.getElementById('mqtt-pass').value       = m.password     || '';
+        document.getElementById('mqtt-prefix').value     = m.topic_prefix || 'relay4';
+        document.getElementById('mqtt-device').value     = m.device_id    || '';
+      })
+      .catch(() => {});
+
+    function refreshStatus() {
+      fetch('/api/status')
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById('dot-modbus').classList.toggle('active', !!d.modbus);
+          document.getElementById('dot-mqtt').classList.toggle('active', !!d.mqtt);
+        })
+        .catch(() => {});
+    }
+    refreshStatus();
+    setInterval(refreshStatus, 2000);
+
+    window.toggle_card = function (id) {
+      document.getElementById(id).classList.toggle('open');
+    };
+
+    window.saveMQTT = function () {
+      const enabled = document.getElementById('mqtt-enabled').checked;
+      const broker  = document.getElementById('mqtt-broker').value.trim();
+      const prefix  = document.getElementById('mqtt-prefix').value.trim();
+      if (enabled) {
+        if (!broker) { showErr('Broker is required'); return; }
+        if (!/^.+:\d+$/.test(broker)) { showErr('Broker must be host:port'); return; }
+        if (!prefix) { showErr('Topic prefix is required'); return; }
+      }
+      fetch('/api/config')
+        .then(r => r.json())
+        .then(current => {
+          const body = Object.assign({}, current, {
+            mqtt: {
+              enabled:      document.getElementById('mqtt-enabled').checked,
+              broker:       document.getElementById('mqtt-broker').value.trim(),
+              username:     document.getElementById('mqtt-user').value.trim(),
+              password:     document.getElementById('mqtt-pass').value,
+              topic_prefix: document.getElementById('mqtt-prefix').value.trim() || 'relay4',
+              device_id:    document.getElementById('mqtt-device').value.trim(),
+            }
+          });
+          return fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        })
+        .then(r => r.json())
+        .then(d => { if (!d.ok) showErr(d.error || 'error'); })
+        .catch(e => showErr(String(e)));
+    };
+
+    window.savePort = function () {
+      const enabled = document.getElementById('mb-enabled').checked;
+      const port = parseInt(document.getElementById('mb-port').value, 10);
+      if (enabled && (!port || port < 1 || port > 65535)) { showErr('Invalid port'); return; }
+      fetch('/api/config')
+        .then(r => r.json())
+        .then(current => fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.assign({}, current, {
+            modbus_enabled: document.getElementById('mb-enabled').checked,
+            modbus_port: port
+          }))
+        }))
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) { showErr(d.error || 'error'); return; }
+        })
+        .catch(e => showErr(String(e)));
+    };
+
+    refresh();
+    connectSSE();
+    setInterval(refresh, 500);
+  })();
+  </script>
+</body>
+</html>

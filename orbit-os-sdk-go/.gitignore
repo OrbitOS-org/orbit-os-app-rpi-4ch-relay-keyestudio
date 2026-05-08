@@ -1,0 +1,40 @@
+# OrbitOS package artifacts
+*.orb
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin/
+/dist/
+
+# Test / coverage
+*.test
+*.out
+coverage.*
+profile.cov
+
+# Go workspace (optional local)
+go.work
+go.work.sum
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# Protoc / tooling caches (if generated locally)
+*.pb.go.bak

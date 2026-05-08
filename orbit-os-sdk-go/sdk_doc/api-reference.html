@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbit OS SDK — API Reference</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --sidebar-w: 256px;
+  --sidebar-bg: #111827;
+  --accent: #3b82f6;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --code-bg: #f8fafc;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+body { font-family: var(--font); color: var(--text); display: flex; min-height: 100vh; background: #fff; }
+
+/* ── Sidebar ── */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--sidebar-bg);
+  position: fixed; top: 0; left: 0; bottom: 0;
+  overflow-y: auto; z-index: 10;
+  padding-bottom: 40px;
+  scrollbar-width: thin; scrollbar-color: #374151 transparent;
+}
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+.sidebar-logo { padding: 20px 20px 4px; display: flex; justify-content: center; }
+.sidebar-logo img { height: 42px; width: auto; display: block; }
+.sidebar-version { padding: 10px 20px 18px; color: #4b5563; font-size: 14px; text-align: center; }
+.sidebar-section { padding: 16px 20px 4px 32px; font-size: 14px; font-weight: 600; }
+#sidebar .sidebar-section a { color: #9ca3af; text-decoration: none; display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 700; padding: 0; border: none; margin: 0; }
+#sidebar .sidebar-section a:hover { color: #d1d5db; }
+#sidebar .sidebar-section a .chevron { font-style: normal; font-size: 10px; transition: transform .2s; margin-right: 6px; }
+#sidebar .sidebar-section.open a .chevron { transform: rotate(90deg); }
+#sidebar nav a {
+  display: block; padding: 4px 20px 4px 52px;
+  color: #6b7280; text-decoration: none; font-size: 13px;
+  border-left: 2px solid transparent; margin-left: -2px;
+  transition: color .12s, border-color .12s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#sidebar nav a:hover { color: #d1d5db; }
+#sidebar nav a.active { color: #fff; border-left-color: var(--accent); }
+
+/* ── Main ── */
+#main { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+
+/* ── Under construction banner ── */
+#under-construction {
+  background: #1a1a1a;
+  color: #ef4444;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* ── Lang bar ── */
+#lang-bar {
+  position: sticky; top: 0; z-index: 9;
+  background: #fff; border-bottom: 1px solid var(--border);
+  height: 48px; padding: 0 40px;
+  display: flex; align-items: center; gap: 6px;
+}
+#lang-bar .label { font-size: 12px; color: var(--muted); font-weight: 500; margin-right: 6px; }
+#doc-version { margin-left: auto; font-size: 11px; font-family: var(--mono); color: var(--muted); opacity: .7; }
+.lang-btn {
+  padding: 4px 14px; border: 1px solid var(--border); background: #fff;
+  border-radius: 6px; font-size: 13px; font-family: var(--font);
+  cursor: pointer; color: var(--muted); transition: all .12s;
+}
+.lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+.lang-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sidebar-version-select { padding: 0 20px 18px; display: flex; justify-content: center; }
+#version-select {
+  padding: 4px 10px; border: 1px solid #374151; background: #1f2937;
+  border-radius: 6px; font-size: 12px; font-family: var(--mono);
+  color: #9ca3af; cursor: pointer; outline: none; transition: border-color .12s; width: 100%;
+}
+#version-select:hover, #version-select:focus { border-color: #6b7280; color: #d1d5db; }
+
+/* ── Content ── */
+#content { padding: 48px 48px 100px; max-width: 1200px; }
+
+.service-block { margin-bottom: 60px; scroll-margin-top: 64px; }
+.service-block h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.service-desc { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+.service-permission { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 24px; font-size: 12px; color: #92400e; background: #fef3c7; border: 1px solid #fde68a; border-radius: 6px; padding: 4px 10px; font-family: var(--mono); }
+.service-permission::before { content: '🔑'; font-size: 11px; }
+.service-checked { display: inline-block; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; margin-left: 8px; vertical-align: middle; title: 'Reviewed'; }
+
+.method-card {
+  border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 16px; overflow: hidden; scroll-margin-top: 64px;
+}
+.method-header {
+  padding: 12px 18px; background: #f9fafb;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+.method-name { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+.method-desc { color: var(--muted); font-size: 13px; }
+.method-body { padding: 16px 18px; }
+.method-group-hdr {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .7px; color: var(--muted);
+  padding: 20px 0 8px; margin-top: 4px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tbl-label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 600; margin-bottom: 6px; margin-top: 14px; }
+.tbl-label:first-child { margin-top: 0; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); padding: 0 0 5px; border-bottom: 1px solid var(--border); }
+td { padding: 7px 0; font-size: 13px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+td:first-child { font-family: var(--mono); font-size: 12px; width: 140px; padding-right: 12px; }
+td:nth-child(2) { font-family: var(--mono); font-size: 12px; color: #7c3aed; width: 110px; padding-right: 12px; }
+td:last-child { color: #374151; }
+
+.code-block {
+  display: none; margin-top: 14px;
+  background: #0f172a; border-radius: 8px;
+  padding: 16px 18px; overflow-x: auto;
+  font-family: var(--mono); font-size: 13px; line-height: 1.65; color: #d4d4d4;
+}
+.code-block.visible { display: block; }
+.kw { color: #569cd6; }
+.tp { color: #4ec9b0; }
+.fn { color: #dcdcaa; }
+.st { color: #ce9178; }
+.cm { color: #6a9955; font-style: italic; }
+.vr { color: #9cdcfe; }
+
+.sig-block {
+  display: none; margin-top: 14px;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 12px 18px; overflow-x: auto;
+  font-family: var(--mono); font-size: 13px; line-height: 1.65; color: #1e293b;
+}
+.sig-block.visible { display: block; }
+.sig-block .kw { color: #1d4ed8; }
+.sig-block .tp { color: #059669; }
+.sig-block .fn { color: #b45309; }
+.sig-block .st { color: #dc2626; }
+.sig-block .vr { color: #1e293b; }
+.type-link { color: #7c3aed; text-decoration: none; font-family: var(--mono); font-size: 12px; }
+.type-link:hover { text-decoration: underline; }
+.sidebar-types-hdr { padding: 20px 20px 4px 32px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #4b5563; }
+
+/* ── Hamburger (hidden on desktop) ── */
+#hamburger {
+  display: none;
+  position: fixed; top: 10px; left: 10px; z-index: 30;
+  width: 38px; height: 38px;
+  align-items: center; justify-content: center;
+  background: #111827; border: none; border-radius: 7px;
+  color: #d1d5db; font-size: 18px; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+#overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45); z-index: 18;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  #hamburger { display: flex; }
+  #sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+    z-index: 20;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #overlay.visible { display: block; }
+  #main { margin-left: 0; }
+  #lang-bar { padding: 0 16px 0 58px; }
+  #content { padding: 20px 14px 60px; }
+  .method-header { gap: 8px; }
+  .method-body { overflow-x: auto; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+  td:first-child { width: 110px; }
+  td:nth-child(2) { width: 90px; }
+  #under-construction { font-size: 11px; padding: 7px 12px; }
+}
+</style>
+</head>
+<body>
+
+<button id="hamburger" aria-label="Toggle navigation">&#9776;</button>
+<div id="overlay"></div>
+
+<div id="sidebar">
+  <div class="sidebar-logo"><img src="logo.png" alt="Orbit OS"></div>
+  <div class="sidebar-version">SDK API 26 Reference</div>
+  <div class="sidebar-version-select"><select id="version-select"></select></div>
+  <nav id="sidebar-nav"></nav>
+</div>
+
+<div id="main">
+
+  <div id="lang-bar">
+    <span class="label">Language</span>
+    <button class="lang-btn active" data-lang="go">Go</button>
+    <span id="doc-version">v26.0430.1324</span>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+// helper — returns { sig, example } for two-part rendering
+function sig(signature, example) {
+  return { sig: signature, example };
+}
+
+// helper — "AuthManager" → "Auth Manager"
+function spacedName(name) {
+  return name
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace('Wi Fi', 'WiFi')
+    .replace('Gpio', 'GPIO')
+    .replace('Pwm', 'PWM')
+    .replace('Uart', 'UART')
+    .replace('Spi', 'SPI')
+    .replace('I2C', 'I2C');
+}
+
+const services = [
+  {
+    id: 'auth', name: 'AuthManager',
+    desc: 'Authentication and session management.',
+    checked: true,
+    methods: [
+      {
+        id: 'auth-login', name: 'Login',
+        desc: 'Authenticates a user and returns a session token.',
+        params: [
+          { name: 'username', type: 'string' },
+          { name: 'password', type: 'string' },
+        ],
+        returns: [
+          { name: 'token',     type: 'string' },
+          { name: 'expiresAt', type: 'int64',  desc: 'Unix timestamp' },
+          { name: 'error',     type: 'error' },
+        ],
+        code: {
+          go: sig(
+            `<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AuthManager</span>) <span class="fn">Login</span>(<span class="vr">username</span>, <span class="vr">password</span> <span class="kw">string</span>) (<span class="vr">token</span> <span class="kw">string</span>, <span class="vr">expiresAt</span> <span class="kw">int64</span>, <span class="vr">err</span> <span class="kw">error</span>)`,
+            `<span class="vr">token</span>, <span class="vr">expiresAt</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AuthManager</span>.<span class="fn">Login</span>(<span class="vr">username</span>, <span class="vr">password</span>)`
+          )        },
+      },
+      {
+        id: 'auth-logout', name: 'Logout',
+        desc: 'Invalidates a session token.',
+        params: [{ name: 'token', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(
+            `<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AuthManager</span>) <span class="fn">Logout</span>(<span class="vr">token</span> <span class="kw">string</span>) <span class="kw">error</span>`,
+            `<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AuthManager</span>.<span class="fn">Logout</span>(<span class="vr">token</span>)`
+          )        },
+      },
+    ],
+  },
+  {
+    id: 'system', name: 'SystemManager',
+    desc: 'Device identity, hardware info, OS metadata and live metrics.',
+    permission: 'SystemService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'system-apiversion', name: 'GetApiVersion',
+        desc: 'Returns the API version and revision running on the device.',
+        params: [],
+        returns: [{ name: 'version', type: 'int64' }, { name: 'revision', type: 'int64' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetApiVersion</span>() (<span class="vr">version</span> <span class="kw">int64</span>, <span class="vr">revision</span> <span class="kw">int64</span>, <span class="vr">err</span> <span class="kw">error</span>)`,`<span class="vr">version</span>, <span class="vr">revision</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetApiVersion</span>()`) },
+      },
+      {
+        id: 'system-apiversioninfo', name: 'GetApiVersionInfo',
+        desc: 'Returns the API version as a formatted string.',
+        params: [],
+        returns: [{ name: 'version', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetApiVersionInfo</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ver</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetApiVersionInfo</span>()`) },
+      },
+      {
+        id: 'system-devicename', name: 'GetDeviceName',
+        desc: 'Returns the configured device name.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetDeviceName</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">name</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetDeviceName</span>()`) },
+      },
+      {
+        id: 'system-socmodel', name: 'GetSocModel',
+        desc: 'Returns the SoC model identifier.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetSocModel</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">model</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetSocModel</span>()`) },
+      },
+      {
+        id: 'system-socvendor', name: 'GetSocVendor',
+        desc: 'Returns the SoC vendor name.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetSocVendor</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">vendor</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetSocVendor</span>()`) },
+      },
+      {
+        id: 'system-boardmodel', name: 'GetBoardModel',
+        desc: 'Returns the board model identifier.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetBoardModel</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">model</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetBoardModel</span>()`) },
+      },
+      {
+        id: 'system-boardvendor', name: 'GetBoardVendor',
+        desc: 'Returns the board vendor name.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetBoardVendor</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">vendor</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetBoardVendor</span>()`) },
+      },
+      {
+        id: 'system-hwversion', name: 'GetHardwareVersion',
+        desc: 'Returns the hardware revision string.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetHardwareVersion</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ver</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetHardwareVersion</span>()`) },
+      },
+      {
+        id: 'system-hwmodel', name: 'GetHardwareModel',
+        desc: 'Returns the hardware model identifier.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetHardwareModel</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">model</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetHardwareModel</span>()`) },
+      },
+      {
+        id: 'system-uuid', name: 'GetSystemUuid',
+        desc: 'Returns the system UUID.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetSystemUuid</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">uuid</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetSystemUuid</span>()`) },
+      },
+      {
+        id: 'system-boardserial', name: 'GetBoardSerial',
+        desc: 'Returns the board serial number.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetBoardSerial</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">serial</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetBoardSerial</span>()`) },
+      },
+      {
+        id: 'system-cpuserial', name: 'GetCpuSerial',
+        desc: 'Returns the CPU serial number.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetCpuSerial</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">serial</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetCpuSerial</span>()`) },
+      },
+      {
+        id: 'system-machineid', name: 'GetMachineId',
+        desc: 'Returns the machine ID.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetMachineId</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">id</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetMachineId</span>()`) },
+      },
+      {
+        id: 'system-arch', name: 'GetArchitecture',
+        desc: 'Returns the CPU architecture (e.g. "arm64", "amd64").',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetArchitecture</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">arch</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetArchitecture</span>()`) },
+      },
+      {
+        id: 'system-ram', name: 'GetTotalRAM',
+        desc: 'Returns total RAM in bytes.',
+        params: [],
+        returns: [{ name: 'value', type: 'uint64' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetTotalRAM</span>() (<span class="kw">uint64</span>, <span class="kw">error</span>)`,`<span class="vr">ram</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetTotalRAM</span>()`) },
+      },
+      {
+        id: 'system-cpumodel', name: 'GetCpuModel',
+        desc: 'Returns the CPU model string.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetCpuModel</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">model</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetCpuModel</span>()`) },
+      },
+      {
+        id: 'system-cpucores', name: 'GetCpuCores',
+        desc: 'Returns the number of physical CPU cores.',
+        params: [],
+        returns: [{ name: 'value', type: 'int64' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetCpuCores</span>() (<span class="kw">int64</span>, <span class="kw">error</span>)`,`<span class="vr">cores</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetCpuCores</span>()`) },
+      },
+      {
+        id: 'system-cputhreads', name: 'GetCpuThreads',
+        desc: 'Returns the number of logical CPU threads.',
+        params: [],
+        returns: [{ name: 'value', type: 'int64' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetCpuThreads</span>() (<span class="kw">int64</span>, <span class="kw">error</span>)`,`<span class="vr">threads</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetCpuThreads</span>()`) },
+      },
+      {
+        id: 'system-cpuminmhz', name: 'GetCpuMinMhz',
+        desc: 'Returns the minimum CPU frequency in MHz.',
+        params: [],
+        returns: [{ name: 'value', type: 'float64' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetCpuMinMhz</span>() (<span class="kw">float64</span>, <span class="kw">error</span>)`,`<span class="vr">minMhz</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetCpuMinMhz</span>()`) },
+      },
+      {
+        id: 'system-cpumaxmhz', name: 'GetCpuMaxMhz',
+        desc: 'Returns the maximum CPU frequency in MHz.',
+        params: [],
+        returns: [{ name: 'value', type: 'float64' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetCpuMaxMhz</span>() (<span class="kw">float64</span>, <span class="kw">error</span>)`,`<span class="vr">maxMhz</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetCpuMaxMhz</span>()`) },
+      },
+      {
+        id: 'system-osname', name: 'GetOsName',
+        desc: 'Returns the OS name.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetOsName</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">name</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetOsName</span>()`) },
+      },
+      {
+        id: 'system-osversion', name: 'GetOsVersion',
+        desc: 'Returns the OS version string.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetOsVersion</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ver</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetOsVersion</span>()`) },
+      },
+      {
+        id: 'system-kernel', name: 'GetKernelVersion',
+        desc: 'Returns the kernel version string.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetKernelVersion</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ver</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetKernelVersion</span>()`) },
+      },
+      {
+        id: 'system-distro', name: 'GetDistro',
+        desc: 'Returns the Linux distribution name.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetDistro</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">distro</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetDistro</span>()`) },
+      },
+      {
+        id: 'system-distroversion', name: 'GetDistroVersion',
+        desc: 'Returns the distribution version string.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetDistroVersion</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ver</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetDistroVersion</span>()`) },
+      },
+      {
+        id: 'system-runtime', name: 'GetRuntimeVersion',
+        desc: 'Returns the Orbit runtime version.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetRuntimeVersion</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ver</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetRuntimeVersion</span>()`) },
+      },
+      {
+        id: 'system-osrevision', name: 'GetOsRevision',
+        desc: 'Returns the logical OS revision string.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetOsRevision</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">rev</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetOsRevision</span>()`) },
+      },
+      {
+        id: 'system-buildversion', name: 'GetBuildVersion',
+        desc: 'Alias for GetOsRevision.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetBuildVersion</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ver</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetBuildVersion</span>()`) },
+      },
+      {
+        id: 'system-runtimebuilddate', name: 'GetRuntimeBuildDate',
+        desc: 'Returns the runtime image build date.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetRuntimeBuildDate</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">date</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetRuntimeBuildDate</span>()`) },
+      },
+      {
+        id: 'system-builddate', name: 'GetBuildDate',
+        desc: 'Alias for GetRuntimeBuildDate.',
+        params: [],
+        returns: [{ name: 'value', type: 'string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetBuildDate</span>() (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">date</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetBuildDate</span>()`) },
+      },
+      {
+        id: 'system-metrics', name: 'GetMetrics',
+        desc: 'Returns live CPU usage, RAM and storage stats.',
+        params: [],
+        returns: [{ name: '*MetricsInfoResponse' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">GetMetrics</span>() (*<span class="tp">MetricsInfoResponse</span>, <span class="kw">error</span>)`,`<span class="vr">metrics</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">GetMetrics</span>()`) },
+      },
+      {
+        id: 'system-attach', name: 'Attach',
+        desc: 'Attaches the SDK client to the running Gravity system service.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">Attach</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">Attach</span>()`) },
+      },
+      {
+        id: 'system-enabledevmode', name: 'EnableDevMode',
+        desc: 'Enables developer mode on the device.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">EnableDevMode</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">EnableDevMode</span>()`) },
+      },
+      {
+        id: 'system-disabledevmode', name: 'DisableDevMode',
+        desc: 'Disables developer mode on the device.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">DisableDevMode</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">DisableDevMode</span>()`) },
+      },
+      {
+        id: 'system-isdevmodeenabled', name: 'IsDevModeEnabled',
+        desc: 'Reports whether developer mode is currently enabled.',
+        params: [],
+        returns: [{ name: 'enabled', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">IsDevModeEnabled</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">IsDevModeEnabled</span>()`) },
+      },
+      {
+        id: 'system-enablessh', name: 'EnableSSHServer',
+        desc: 'Enables the SSH server on the device.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">EnableSSHServer</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">EnableSSHServer</span>()`) },
+      },
+      {
+        id: 'system-disablessh', name: 'DisableSSHServer',
+        desc: 'Disables the SSH server on the device.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">DisableSSHServer</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">DisableSSHServer</span>()`) },
+      },
+      {
+        id: 'system-issshserverenabled', name: 'IsSSHServerEnabled',
+        desc: 'Reports whether the SSH server is currently enabled.',
+        params: [],
+        returns: [{ name: 'enabled', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">IsSSHServerEnabled</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">IsSSHServerEnabled</span>()`) },
+      },
+      {
+        id: 'system-enablereboot', name: 'EnableRebootOnFailure',
+        desc: 'Enables automatic reboot when a critical failure is detected.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">EnableRebootOnFailure</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">EnableRebootOnFailure</span>()`) },
+      },
+      {
+        id: 'system-disablereboot', name: 'DisableRebootOnFailure',
+        desc: 'Disables automatic reboot on failure.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">DisableRebootOnFailure</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">DisableRebootOnFailure</span>()`) },
+      },
+      {
+        id: 'system-isrebootonfailure', name: 'IsRebootOnFailureEnabled',
+        desc: 'Reports whether automatic reboot on failure is enabled.',
+        params: [],
+        returns: [{ name: 'enabled', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">IsRebootOnFailureEnabled</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">IsRebootOnFailureEnabled</span>()`) },
+      },
+      {
+        id: 'system-allowuntrusted', name: 'AllowUntrustedApps',
+        desc: 'Allows installation of apps from untrusted sources.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">AllowUntrustedApps</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">AllowUntrustedApps</span>()`) },
+      },
+      {
+        id: 'system-disallowuntrusted', name: 'DisallowUntrustedApps',
+        desc: 'Blocks installation of apps from untrusted sources.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">DisallowUntrustedApps</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">DisallowUntrustedApps</span>()`) },
+      },
+      {
+        id: 'system-isuntrustedallowed', name: 'IsUntrustedAppsAllowed',
+        desc: 'Reports whether untrusted app installation is currently allowed.',
+        params: [],
+        returns: [{ name: 'allowed', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">SystemManager</span>) <span class="fn">IsUntrustedAppsAllowed</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SystemManager</span>.<span class="fn">IsUntrustedAppsAllowed</span>()`) },
+      },
+    ],
+  },
+  {
+    id: 'package', name: 'PackageManager',
+    desc: 'Application package installation and management.',
+    permission: 'PackageService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'pkg-list', name: 'ListInstalledPackages',
+        desc: 'Returns all installed packages.',
+        params: [],
+        returns: [{ name: '[]InstalledPackage' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">PackageManager</span>) <span class="fn">ListInstalledPackages</span>() ([]*<span class="tp">InstalledPackage</span>, <span class="kw">error</span>)`,`<span class="vr">pkgs</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PackageManager</span>.<span class="fn">ListInstalledPackages</span>()`)        },
+      },
+      {
+        id: 'pkg-install', name: 'InstallPackage',
+        desc: 'Uploads and installs an .orb package from a local path.',
+        params: [{ name: 'ctx', type: 'Context' }, { name: 'orbPath', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">PackageManager</span>) <span class="fn">InstallPackage</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">orbPath</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PackageManager</span>.<span class="fn">InstallPackage</span>(<span class="vr">ctx</span>, <span class="st">"/path/to/app.orb"</span>)`)        },
+      },
+      {
+        id: 'pkg-remove', name: 'RemovePackage',
+        desc: 'Uninstalls a package by ID.',
+        params: [{ name: 'ctx', type: 'Context' }, { name: 'packageID', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">PackageManager</span>) <span class="fn">RemovePackage</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">packageID</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PackageManager</span>.<span class="fn">RemovePackage</span>(<span class="vr">ctx</span>, <span class="vr">packageID</span>)`)        },
+      },
+    ],
+  },
+  {
+    id: 'ethernet', name: 'EthernetManager',
+    desc: 'Ethernet interface configuration and status.',
+    checked: true,
+    permission: 'EthernetService/*',
+    methods: [
+      {
+        id: 'eth-list', name: 'ListEthernetInterfaces',
+        desc: 'Returns all Ethernet interfaces available on the device.',
+        params: [],
+        returns: [{ name: '[]*EthernetLinkProperties' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">e</span> *<span class="tp">EthernetManager</span>) <span class="fn">ListEthernetInterfaces</span>() ([]*<span class="tp">EthernetLinkProperties</span>, <span class="kw">error</span>)`,`<span class="vr">ifaces</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">EthernetManager</span>.<span class="fn">ListEthernetInterfaces</span>()`) },
+      },
+      {
+        id: 'eth-connected', name: 'IsEthernetConnected',
+        desc: 'Reports whether the given interface has link.',
+        params: [{ name: 'interfaceName', type: 'string' }],
+        returns: [{ name: 'connected', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">e</span> *<span class="tp">EthernetManager</span>) <span class="fn">IsEthernetConnected</span>(<span class="vr">interfaceName</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">EthernetManager</span>.<span class="fn">IsEthernetConnected</span>(<span class="st">"eth0"</span>)`) },
+      },
+      {
+        id: 'eth-props', name: 'GetEthernetLinkProperties',
+        desc: 'Returns link properties (MAC, state, MTU, IP config) for an interface.',
+        params: [{ name: 'interfaceName', type: 'string' }],
+        returns: [{ name: '*EthernetLinkProperties' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">e</span> *<span class="tp">EthernetManager</span>) <span class="fn">GetEthernetLinkProperties</span>(<span class="vr">interfaceName</span> <span class="kw">string</span>) (*<span class="tp">EthernetLinkProperties</span>, <span class="kw">error</span>)`,`<span class="vr">props</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">EthernetManager</span>.<span class="fn">GetEthernetLinkProperties</span>(<span class="st">"eth0"</span>)`) },
+      },
+      {
+        id: 'eth-config', name: 'SetEthernetConfig',
+        desc: 'Applies static IP or DHCP settings to an interface.',
+        params: [
+          { name: 'interfaceName', type: 'string' },
+          { name: 'enable',        type: 'bool' },
+          { name: 'dhcpEnable',    type: 'bool' },
+          { name: 'ipv4Address',   type: 'string', desc: 'CIDR notation — ignored when dhcpEnable is true' },
+          { name: 'ipv4Gateway',   type: 'string' },
+          { name: 'ipv4Dns',       type: '[]string' },
+        ],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">e</span> *<span class="tp">EthernetManager</span>) <span class="fn">SetEthernetConfig</span>(\n    <span class="vr">interfaceName</span> <span class="kw">string</span>, <span class="vr">enable</span>, <span class="vr">dhcpEnable</span> <span class="kw">bool</span>,\n    <span class="vr">ipv4Address</span>, <span class="vr">ipv4Gateway</span> <span class="kw">string</span>, <span class="vr">ipv4Dns</span> []<span class="kw">string</span>,\n) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">EthernetManager</span>.<span class="fn">SetEthernetConfig</span>(\n    <span class="st">"eth0"</span>, <span class="kw">true</span>, <span class="kw">false</span>,\n    <span class="st">"192.168.1.10/24"</span>, <span class="st">"192.168.1.1"</span>, []<span class="kw">string</span>{<span class="st">"8.8.8.8"</span>},\n)`) },
+      },
+      {
+        id: 'eth-enable', name: 'EnableEthernet',
+        desc: 'Brings an Ethernet interface up.',
+        params: [{ name: 'interfaceName', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">e</span> *<span class="tp">EthernetManager</span>) <span class="fn">EnableEthernet</span>(<span class="vr">interfaceName</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">EthernetManager</span>.<span class="fn">EnableEthernet</span>(<span class="st">"eth0"</span>)`) },
+      },
+      {
+        id: 'eth-disable', name: 'DisableEthernet',
+        desc: 'Brings an Ethernet interface down.',
+        params: [{ name: 'interfaceName', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">e</span> *<span class="tp">EthernetManager</span>) <span class="fn">DisableEthernet</span>(<span class="vr">interfaceName</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">EthernetManager</span>.<span class="fn">DisableEthernet</span>(<span class="st">"eth0"</span>)`) },
+      },
+    ],
+  },
+  {
+    id: 'wifi', name: 'WiFiManager',
+    desc: 'Wi-Fi interface management — client mode and access point.',
+    checked: true,
+    permission: 'WiFiService/*',
+    methods: [
+      // ── General ──────��──────────────────────────────────��────────────────────
+      { group: 'General' },
+      {
+        id: 'wifi-list', name: 'ListInterfaces',
+        desc: 'Returns all Wi-Fi interfaces on the device.',
+        params: [],
+        returns: [{ name: '[]*WiFiLinkProperties' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">ListInterfaces</span>() ([]*<span class="tp">WiFiLinkProperties</span>, <span class="kw">error</span>)`,`<span class="vr">ifaces</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">ListInterfaces</span>()`) },
+      },
+      {
+        id: 'wifi-linkprops', name: 'GetLinkProperties',
+        desc: 'Returns link-layer and mode properties for a Wi-Fi interface.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: '*WiFiLinkProperties' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">GetLinkProperties</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (*<span class="tp">WiFiLinkProperties</span>, <span class="kw">error</span>)`,`<span class="vr">props</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">GetLinkProperties</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      {
+        id: 'wifi-connected', name: 'IsConnected',
+        desc: 'Returns true if the interface has an active Wi-Fi connection.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: 'connected', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">IsConnected</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">IsConnected</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      {
+        id: 'wifi-getmode', name: 'GetMode',
+        desc: 'Returns the current operating mode of the interface.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: 'mode', type: 'WiFiMode' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">GetMode</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (<span class="tp">WiFiMode</span>, <span class="kw">error</span>)`,`<span class="vr">mode</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">GetMode</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      {
+        id: 'wifi-setmodeclient', name: 'SetModeClient',
+        desc: 'Switches the interface to client (station) mode.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">SetModeClient</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">SetModeClient</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      // ── Client ────────────────────────���──────────────────────────────────────
+      { group: 'Client' },
+      {
+        id: 'wifi-setclient', name: 'SetClientConfig',
+        desc: 'Configures and stores Wi-Fi client settings for the interface.',
+        params: [
+          { name: 'ifname',      type: 'string' },
+          { name: 'ssid',        type: 'string' },
+          { name: 'password',    type: 'string' },
+          { name: 'security',    type: 'string', desc: '"none" | "wpa2" | "wpa3" | "wpa2-wpa3"' },
+          { name: 'dhcpEnable',  type: 'bool' },
+          { name: 'ipv4Address', type: 'string', desc: 'CIDR — ignored when dhcpEnable is true' },
+          { name: 'ipv4Gateway', type: 'string' },
+          { name: 'ipv4Dns',     type: '[]string' },
+        ],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">SetClientConfig</span>(\n    <span class="vr">ifname</span>, <span class="vr">ssid</span>, <span class="vr">password</span>, <span class="vr">security</span> <span class="kw">string</span>,\n    <span class="vr">dhcpEnable</span> <span class="kw">bool</span>,\n    <span class="vr">ipv4Address</span>, <span class="vr">ipv4Gateway</span> <span class="kw">string</span>,\n    <span class="vr">ipv4Dns</span> []<span class="kw">string</span>,\n) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">SetClientConfig</span>(\n    <span class="st">"wlan0"</span>, <span class="st">"MySSID"</span>, <span class="st">"pass"</span>, <span class="st">"wpa2"</span>,\n    <span class="kw">true</span>, <span class="st">""</span>, <span class="st">""</span>, <span class="kw">nil</span>,\n)`) },
+      },
+      {
+        id: 'wifi-getclientprops', name: 'GetClientProperties',
+        desc: 'Returns IP and radio properties for the current client connection.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: '*ClientProperties' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">GetClientProperties</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (*<span class="tp">ClientProperties</span>, <span class="kw">error</span>)`,`<span class="vr">props</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">GetClientProperties</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      {
+        id: 'wifi-connect', name: 'Connect',
+        desc: 'Brings up the Wi-Fi connection using the previously stored client config.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">Connect</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">Connect</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      {
+        id: 'wifi-disconnect', name: 'Disconnect',
+        desc: 'Disconnects from the current Wi-Fi network.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">Disconnect</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">Disconnect</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      // ── Access Point ────────────────��────────────────────────────────────────
+      { group: 'Access Point' },
+      {
+        id: 'wifi-startap', name: 'StartAP',
+        desc: 'Configures and starts an access point on the given interface.',
+        params: [
+          { name: 'ifname',   type: 'string' },
+          { name: 'ssid',     type: 'string' },
+          { name: 'password', type: 'string' },
+          { name: 'band',     type: 'string', desc: '"2.4GHz" or "5GHz"' },
+          { name: 'channel',  type: 'int32',  desc: '0 = auto' },
+        ],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">StartAP</span>(<span class="vr">ifname</span>, <span class="vr">ssid</span>, <span class="vr">password</span>, <span class="vr">band</span> <span class="kw">string</span>, <span class="vr">channel</span> <span class="kw">int32</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">StartAP</span>(<span class="st">"wlan0"</span>, <span class="st">"MyAP"</span>, <span class="st">"pass"</span>, <span class="st">"5GHz"</span>, <span class="st">0</span>)`) },
+      },
+      {
+        id: 'wifi-stopap', name: 'StopAP',
+        desc: 'Stops the access point on the given interface.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">StopAP</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">StopAP</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      {
+        id: 'wifi-approps', name: 'GetAPProperties',
+        desc: 'Returns properties of the active access point.',
+        params: [{ name: 'ifname', type: 'string' }],
+        returns: [{ name: '*APProperties' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">GetAPProperties</span>(<span class="vr">ifname</span> <span class="kw">string</span>) (*<span class="tp">APProperties</span>, <span class="kw">error</span>)`,`<span class="vr">props</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">GetAPProperties</span>(<span class="st">"wlan0"</span>)`) },
+      },
+      // ── Scan ───────────────────��─────────────────────────────��───────────────
+      { group: 'Scan' },
+      {
+        id: 'wifi-scan', name: 'Scan',
+        desc: 'Scans for nearby Wi-Fi networks. forceRescan=true triggers a new hardware scan (~3 s).',
+        params: [
+          { name: 'ifname',      type: 'string' },
+          { name: 'forceRescan', type: 'bool' },
+        ],
+        returns: [{ name: '[]*ScannedNetwork' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">w</span> *<span class="tp">WiFiManager</span>) <span class="fn">Scan</span>(<span class="vr">ifname</span> <span class="kw">string</span>, <span class="vr">forceRescan</span> <span class="kw">bool</span>) ([]*<span class="tp">ScannedNetwork</span>, <span class="kw">error</span>)`,`<span class="vr">nets</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">WiFiManager</span>.<span class="fn">Scan</span>(<span class="st">"wlan0"</span>, <span class="kw">true</span>)`) },
+      },
+    ],
+  },
+  {
+    id: 'gpio', name: 'GpioManager',
+    desc: 'General-purpose I/O pin control.',
+    permission: 'GpioService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'gpio-list', name: 'ListPins',
+        desc: 'Returns all GPIO pins available on the device.',
+        params: [],
+        returns: [{ name: '[]GpioPin' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">GpioManager</span>) <span class="fn">ListPins</span>() ([]*<span class="tp">GpioPin</span>, <span class="kw">error</span>)`,`<span class="vr">pins</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">GpioManager</span>.<span class="fn">ListPins</span>()`)        },
+      },
+      {
+        id: 'gpio-getdir', name: 'GetDirection',
+        desc: 'Reads the current direction of a pin.',
+        params: [{ name: 'pin', type: '*GpioPin' }],
+        returns: [{ name: 'dir', type: 'GpioDirection' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">GpioManager</span>) <span class="fn">GetDirection</span>(<span class="vr">pin</span> *<span class="tp">GpioPin</span>) (<span class="tp">GpioDirection</span>, <span class="kw">error</span>)`,`<span class="vr">dir</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">GpioManager</span>.<span class="fn">GetDirection</span>(<span class="vr">pin</span>)`)        },
+      },
+      {
+        id: 'gpio-setdir', name: 'SetDirection',
+        desc: 'Configures a pin as input or output.',
+        params: [{ name: 'pin', type: '*GpioPin' }, { name: 'dir', type: 'GpioDirection', desc: 'GPIO_DIR_IN | GPIO_DIR_OUT' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">GpioManager</span>) <span class="fn">SetDirection</span>(<span class="vr">pin</span> *<span class="tp">GpioPin</span>, <span class="vr">dir</span> <span class="tp">GpioDirection</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">GpioManager</span>.<span class="fn">SetDirection</span>(<span class="vr">pin</span>, <span class="vr">GPIO_DIR_OUT</span>)`)        },
+      },
+      {
+        id: 'gpio-getlevel', name: 'GetLevel',
+        desc: 'Reads the current logic level of a pin.',
+        params: [{ name: 'pin', type: '*GpioPin' }],
+        returns: [{ name: 'level', type: 'GpioLevel' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">GpioManager</span>) <span class="fn">GetLevel</span>(<span class="vr">pin</span> *<span class="tp">GpioPin</span>) (<span class="tp">GpioLevel</span>, <span class="kw">error</span>)`,`<span class="vr">level</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">GpioManager</span>.<span class="fn">GetLevel</span>(<span class="vr">pin</span>)`)        },
+      },
+      {
+        id: 'gpio-setlevel', name: 'SetLevel',
+        desc: 'Sets the logic level of an output pin.',
+        params: [{ name: 'pin', type: '*GpioPin' }, { name: 'level', type: 'GpioLevel', desc: 'GPIO_LEVEL_LOW | GPIO_LEVEL_HIGH' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">GpioManager</span>) <span class="fn">SetLevel</span>(<span class="vr">pin</span> *<span class="tp">GpioPin</span>, <span class="vr">level</span> <span class="tp">GpioLevel</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">GpioManager</span>.<span class="fn">SetLevel</span>(<span class="vr">pin</span>, <span class="vr">GPIO_LEVEL_HIGH</span>)`)        },
+      },
+    ],
+  },
+  {
+    id: 'pwm', name: 'PwmManager',
+    desc: 'PWM channel configuration and control.',
+    permission: 'PwmService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'pwm-list', name: 'ListChannels',
+        desc: 'Returns all available PWM channels.',
+        params: [],
+        returns: [{ name: '[]PwmChannel', type: '', desc: '{ Channel, Name }' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">PwmManager</span>) <span class="fn">ListChannels</span>() ([]*<span class="tp">PwmChannel</span>, <span class="kw">error</span>)`,`<span class="vr">channels</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PwmManager</span>.<span class="fn">ListChannels</span>()`)        },
+      },
+      {
+        id: 'pwm-getprops', name: 'GetProperties',
+        desc: 'Reads the current configuration of a PWM channel.',
+        params: [{ name: 'ch', type: '*PwmChannel' }],
+        returns: [{ name: 'props', type: '*PwmProperties', desc: '{ Channel, Enabled, DutyCycle, FrequencyHz }' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">PwmManager</span>) <span class="fn">GetProperties</span>(<span class="vr">ch</span> *<span class="tp">PwmChannel</span>) (*<span class="tp">PwmProperties</span>, <span class="kw">error</span>)`,`<span class="vr">props</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PwmManager</span>.<span class="fn">GetProperties</span>(<span class="vr">ch</span>)`)        },
+      },
+      {
+        id: 'pwm-set', name: 'SetPwm',
+        desc: 'Configures and starts a PWM output on the given channel.',
+        params: [
+          { name: 'ch',          type: '*PwmChannel' },
+          { name: 'dutyCycle',   type: 'float64', desc: '0.0–1.0' },
+          { name: 'frequencyHz', type: 'float64' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">PwmManager</span>) <span class="fn">SetPwm</span>(<span class="vr">ch</span> *<span class="tp">PwmChannel</span>, <span class="vr">dutyCycle</span>, <span class="vr">frequencyHz</span> <span class="kw">float64</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PwmManager</span>.<span class="fn">SetPwm</span>(<span class="vr">ch</span>, <span class="st">0.5</span>, <span class="st">1000.0</span>)`)        },
+      },
+      {
+        id: 'pwm-stop', name: 'StopPwm',
+        desc: 'Disables PWM output on the given channel.',
+        params: [{ name: 'ch', type: '*PwmChannel' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">PwmManager</span>) <span class="fn">StopPwm</span>(<span class="vr">ch</span> *<span class="tp">PwmChannel</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PwmManager</span>.<span class="fn">StopPwm</span>(<span class="vr">ch</span>)`)        },
+      },
+    ],
+  },
+  {
+    id: 'uart', name: 'UartManager',
+    desc: 'Serial port (UART) communication. Open returns a UartPort handle — all port operations are called on the handle.',
+    checked: true,
+    permission: 'UartService/*',
+    methods: [
+      { group: 'UartManager' },
+      {
+        id: 'uart-list', name: 'ListPorts',
+        desc: 'Returns the names of all available UART ports.',
+        params: [],
+        returns: [{ name: '[]string' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">UartManager</span>) <span class="fn">ListPorts</span>() ([]<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">ports</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">UartManager</span>.<span class="fn">ListPorts</span>()`) },
+      },
+      {
+        id: 'uart-open', name: 'Open',
+        desc: 'Opens and configures a UART port. Returns a UartPort handle for all subsequent operations.',
+        params: [{ name: 'cfg', type: 'UartConfig' }],
+        returns: [{ name: '*UartPort' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">UartManager</span>) <span class="fn">Open</span>(<span class="vr">cfg</span> <span class="tp">UartConfig</span>) (*<span class="tp">UartPort</span>, <span class="kw">error</span>)`,`<span class="vr">port</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">UartManager</span>.<span class="fn">Open</span>(<span class="tp">UartConfig</span>{\n    <span class="vr">Port</span>:     <span class="st">"ttyS0"</span>,\n    <span class="vr">Baudrate</span>: <span class="st">115200</span>,\n    <span class="vr">DataBits</span>: <span class="st">8</span>,\n    <span class="vr">Parity</span>:   <span class="vr">UartParityNone</span>,\n    <span class="vr">StopBits</span>: <span class="vr">UartStopBits1</span>,\n})`) },
+      },
+      { group: 'UartPort' },
+      {
+        id: 'uart-close', name: 'Close',
+        desc: 'Closes the port.',
+        params: [],
+        returns: [{ name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">UartPort</span>) <span class="fn">Close</span>() <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">port</span>.<span class="fn">Close</span>()`) },
+      },
+      {
+        id: 'uart-getconfig', name: 'GetConfig',
+        desc: 'Returns the current configuration of the port.',
+        params: [],
+        returns: [{ name: '*UartConfig' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">UartPort</span>) <span class="fn">GetConfig</span>() (*<span class="tp">UartConfig</span>, <span class="kw">error</span>)`,`<span class="vr">cfg</span>, <span class="vr">err</span> := <span class="vr">port</span>.<span class="fn">GetConfig</span>()`) },
+      },
+      {
+        id: 'uart-write', name: 'Write',
+        desc: 'Writes raw bytes to the port. Returns the number of bytes written.',
+        params: [{ name: 'data', type: '[]byte' }],
+        returns: [{ name: 'bytesWritten', type: 'int' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">UartPort</span>) <span class="fn">Write</span>(<span class="vr">data</span> []<span class="kw">byte</span>) (<span class="kw">int</span>, <span class="kw">error</span>)`,`<span class="vr">n</span>, <span class="vr">err</span> := <span class="vr">port</span>.<span class="fn">Write</span>([]<span class="kw">byte</span>(<span class="st">"hello"</span>))`) },
+      },
+      {
+        id: 'uart-listen', name: 'Listen',
+        desc: 'Streams incoming bytes, calling onChunk for each chunk. Blocks until ctx is cancelled or the stream ends.',
+        params: [
+          { name: 'ctx',          type: 'Context' },
+          { name: 'maxChunkSize', type: 'int' },
+          { name: 'onChunk',      type: 'func([]byte)' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">UartPort</span>) <span class="fn">Listen</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">maxChunkSize</span> <span class="kw">int</span>, <span class="vr">onChunk</span> <span class="kw">func</span>([]<span class="kw">byte</span>)) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">port</span>.<span class="fn">Listen</span>(<span class="vr">ctx</span>, <span class="st">256</span>, <span class="kw">func</span>(<span class="vr">b</span> []<span class="kw">byte</span>) {\n    fmt.Printf(<span class="st">"rx: %q\n"</span>, <span class="vr">b</span>)\n})`) },
+      },
+      {
+        id: 'uart-listenasync', name: 'ListenAsync',
+        desc: 'Like Listen but returns a channel instead of a callback. Channel is closed when the stream ends or ctx is cancelled.',
+        params: [
+          { name: 'ctx',          type: 'Context' },
+          { name: 'maxChunkSize', type: 'int' },
+        ],
+        returns: [{ name: '<-chan []byte' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">UartPort</span>) <span class="fn">ListenAsync</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">maxChunkSize</span> <span class="kw">int</span>) (&lt;-<span class="kw">chan</span> []<span class="kw">byte</span>, <span class="kw">error</span>)`,`<span class="vr">ch</span>, <span class="vr">err</span> := <span class="vr">port</span>.<span class="fn">ListenAsync</span>(<span class="vr">ctx</span>, <span class="st">256</span>)\n<span class="kw">for</span> <span class="vr">b</span> := <span class="kw">range</span> <span class="vr">ch</span> {\n    fmt.Printf(<span class="st">"rx: %q\n"</span>, <span class="vr">b</span>)\n}`) },
+      },
+    ],
+  },
+  {
+    id: 'i2c', name: 'I2CManager',
+    desc: 'I²C bus discovery and data transfer.',
+    permission: 'I2cService/*',
+    checked: true,
+    types: [
+      { name: 'I2CConfig', fields: [
+        { name: 'Bus', type: 'uint32' },
+        { name: 'ClockHz', type: 'uint32' },
+        { name: 'TenBitAddr', type: 'bool' },
+        { name: 'ClockStretching', type: 'bool' },
+      ]},
+      { name: 'I2CBus', desc: 'Handle to a specific I²C bus returned by Open().', fields: [
+        { name: '(bus number stored internally)' },
+      ]},
+    ],
+    methods: [
+      { group: 'I2CManager' },
+      {
+        id: 'i2c-buses', name: 'ListBuses',
+        desc: 'Returns the indices of all available I²C buses.',
+        params: [],
+        returns: [{ name: '[]uint32' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">I2CManager</span>) <span class="fn">ListBuses</span>() ([]<span class="kw">uint32</span>, <span class="kw">error</span>)`,`<span class="vr">buses</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">I2CManager</span>.<span class="fn">ListBuses</span>()`)        },
+      },
+      {
+        id: 'i2c-open', name: 'Open',
+        desc: 'Configures the bus and returns a handle for all subsequent operations.',
+        params: [
+          { name: 'bus', type: 'uint32' },
+          { name: 'clockHz', type: 'uint32' },
+          { name: 'tenBitAddr', type: 'bool' },
+          { name: 'clockStretching', type: 'bool' },
+        ],
+        returns: [{ name: '*I2CBus', type: 'I2CBus' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">I2CManager</span>) <span class="fn">Open</span>(<span class="vr">bus</span> <span class="kw">uint32</span>, <span class="vr">clockHz</span> <span class="kw">uint32</span>, <span class="vr">tenBitAddr</span> <span class="kw">bool</span>, <span class="vr">clockStretching</span> <span class="kw">bool</span>) (*<span class="tp">I2CBus</span>, <span class="kw">error</span>)`,`<span class="vr">b</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">I2CManager</span>.<span class="fn">Open</span>(<span class="st">1</span>, <span class="st">400000</span>, <span class="kw">false</span>, <span class="kw">false</span>)`)        },
+      },
+      { group: 'I2CBus' },
+      {
+        id: 'i2c-scan', name: 'Scan',
+        desc: 'Probes all 7-bit addresses (0x03–0x77) and returns those that respond.',
+        params: [],
+        returns: [{ name: '[]uint32', desc: 'responding addresses' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">b</span> *<span class="tp">I2CBus</span>) <span class="fn">Scan</span>() ([]<span class="kw">uint32</span>, <span class="kw">error</span>)`,`<span class="vr">addrs</span>, <span class="vr">err</span> := <span class="vr">b</span>.<span class="fn">Scan</span>()`)        },
+      },
+      {
+        id: 'i2c-getconfig', name: 'GetConfig',
+        desc: 'Returns the current configuration of the bus.',
+        params: [],
+        returns: [{ name: 'cfg', type: 'I2CConfig' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">b</span> *<span class="tp">I2CBus</span>) <span class="fn">GetConfig</span>() (<span class="tp">I2CConfig</span>, <span class="kw">error</span>)`,`<span class="vr">cfg</span>, <span class="vr">err</span> := <span class="vr">b</span>.<span class="fn">GetConfig</span>()`)        },
+      },
+      {
+        id: 'i2c-transfer', name: 'Transfer',
+        desc: 'Performs a write, read, or write-then-read transaction. Pass nil data for read-only; 0 readLen for write-only.',
+        params: [
+          { name: 'addr', type: 'uint32', desc: '7-bit device address (e.g. 0x48)' },
+          { name: 'data', type: '[]byte', desc: 'bytes to write (nil for read-only)' },
+          { name: 'readLen', type: 'uint32', desc: 'bytes to read back (0 for write-only)' },
+          { name: 'flags', type: 'uint32', desc: 'i2c_msg flags (0 for most uses)' },
+        ],
+        returns: [{ name: '[]byte', desc: 'received bytes (nil for write-only)' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">b</span> *<span class="tp">I2CBus</span>) <span class="fn">Transfer</span>(<span class="vr">addr</span> <span class="kw">uint32</span>, <span class="vr">data</span> []<span class="kw">byte</span>, <span class="vr">readLen</span> <span class="kw">uint32</span>, <span class="vr">flags</span> <span class="kw">uint32</span>) ([]<span class="kw">byte</span>, <span class="kw">error</span>)`,`<span class="vr">data</span>, <span class="vr">err</span> := <span class="vr">b</span>.<span class="fn">Transfer</span>(<span class="st">0x48</span>, []<span class="kw">byte</span>{<span class="st">0x00</span>}, <span class="st">2</span>, <span class="st">0</span>)`)        },
+      },
+    ],
+  },
+  {
+    id: 'spi', name: 'SpiManager',
+    desc: 'SPI bus configuration and full-duplex transfer.',
+    permission: 'SpiService/*',
+    checked: true,
+    types: [
+      { name: 'SpiConfig', fields: [
+        { name: 'Bus',         type: 'uint32' },
+        { name: 'ChipSelect',  type: 'uint32' },
+        { name: 'MaxSpeedHz',  type: 'uint32' },
+        { name: 'BitsPerWord', type: 'uint32' },
+        { name: 'Mode',        type: 'int', desc: '0–3 (CPOL/CPHA)' },
+        { name: 'LSBFirst',    type: 'bool' },
+      ]},
+      { name: 'SpiDevice', desc: 'Handle to a configured SPI device (bus + chip select) returned by Open().', fields: [
+        { name: '(bus + cs stored internally)' },
+      ]},
+    ],
+    methods: [
+      { group: 'SpiManager' },
+      {
+        id: 'spi-list', name: 'ListDevices',
+        desc: 'Returns available SPI device names (e.g. "spidev0.0").',
+        params: [],
+        returns: [{ name: '[]string' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">SpiManager</span>) <span class="fn">ListDevices</span>() ([]<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">devices</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SpiManager</span>.<span class="fn">ListDevices</span>()`)        },
+      },
+      {
+        id: 'spi-open', name: 'Open',
+        desc: 'Configures the SPI device at (bus, cs) and returns a handle for all subsequent operations.',
+        params: [
+          { name: 'bus',         type: 'uint32' },
+          { name: 'cs',          type: 'uint32', desc: 'Chip select index' },
+          { name: 'maxSpeedHz',  type: 'uint32' },
+          { name: 'bitsPerWord', type: 'uint32' },
+          { name: 'mode',        type: 'int', desc: '0–3 (CPOL/CPHA)' },
+          { name: 'lsbFirst',    type: 'bool' },
+        ],
+        returns: [{ name: '*SpiDevice', type: 'SpiDevice' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">SpiManager</span>) <span class="fn">Open</span>(<span class="vr">bus</span>, <span class="vr">cs</span> <span class="kw">uint32</span>, <span class="vr">maxSpeedHz</span>, <span class="vr">bitsPerWord</span> <span class="kw">uint32</span>, <span class="vr">mode</span> <span class="kw">int</span>, <span class="vr">lsbFirst</span> <span class="kw">bool</span>) (*<span class="tp">SpiDevice</span>, <span class="kw">error</span>)`,`<span class="vr">dev</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">SpiManager</span>.<span class="fn">Open</span>(<span class="st">0</span>, <span class="st">0</span>, <span class="st">1000000</span>, <span class="st">8</span>, <span class="st">0</span>, <span class="kw">false</span>)`)        },
+      },
+      { group: 'SpiDevice' },
+      {
+        id: 'spi-getconfig', name: 'GetConfig',
+        desc: 'Returns the current configuration of the device.',
+        params: [],
+        returns: [{ name: '*SpiConfig', type: 'SpiConfig' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">d</span> *<span class="tp">SpiDevice</span>) <span class="fn">GetConfig</span>() (*<span class="tp">SpiConfig</span>, <span class="kw">error</span>)`,`<span class="vr">cfg</span>, <span class="vr">err</span> := <span class="vr">dev</span>.<span class="fn">GetConfig</span>()`)        },
+      },
+      {
+        id: 'spi-transfer', name: 'Transfer',
+        desc: 'Performs a full-duplex SPI transfer. Pass readLength=0 for write-only; when smaller than len(dataOut), the last readLength bytes are returned.',
+        params: [
+          { name: 'dataOut',    type: '[]byte' },
+          { name: 'readLength', type: 'uint32', desc: '0 = write-only' },
+        ],
+        returns: [{ name: '[]byte', desc: 'received MISO bytes' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">d</span> *<span class="tp">SpiDevice</span>) <span class="fn">Transfer</span>(<span class="vr">dataOut</span> []<span class="kw">byte</span>, <span class="vr">readLength</span> <span class="kw">uint32</span>) ([]<span class="kw">byte</span>, <span class="kw">error</span>)`,`<span class="vr">rx</span>, <span class="vr">err</span> := <span class="vr">dev</span>.<span class="fn">Transfer</span>(<span class="vr">txData</span>, <span class="kw">uint32</span>(<span class="kw">len</span>(<span class="vr">txData</span>)))`)        },
+      },
+    ],
+  },
+  {
+    id: 'camera', name: 'CameraManager',
+    desc: 'V4L2 camera capture and streaming.',
+    checked: true,
+    permission: 'CameraService/*',
+    methods: [
+      {
+        id: 'cam-list', name: 'ListDevices',
+        desc: 'Returns all V4L2 video devices available on the system.',
+        params: [{ name: 'ctx', type: 'Context' }],
+        returns: [{ name: '[]*CameraDeviceInfo' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">CameraManager</span>) <span class="fn">ListDevices</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>) ([]*<span class="tp">CameraDeviceInfo</span>, <span class="kw">error</span>)`,`<span class="vr">devices</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">CameraManager</span>.<span class="fn">ListDevices</span>(<span class="vr">ctx</span>)`) },
+      },
+      {
+        id: 'cam-devinfo', name: 'GetDeviceInfo',
+        desc: 'Returns metadata (driver, card, formats, resolutions) for a specific camera device.',
+        params: [{ name: 'ctx', type: 'Context' }, { name: 'deviceID', type: 'string', desc: 'e.g. "/dev/video0"' }],
+        returns: [{ name: '*CameraDeviceInfo' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">CameraManager</span>) <span class="fn">GetDeviceInfo</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">deviceID</span> <span class="kw">string</span>) (*<span class="tp">CameraDeviceInfo</span>, <span class="kw">error</span>)`,`<span class="vr">info</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">CameraManager</span>.<span class="fn">GetDeviceInfo</span>(<span class="vr">ctx</span>, <span class="st">"/dev/video0"</span>)`) },
+      },
+      {
+        id: 'cam-lock', name: 'LockCamera',
+        desc: 'Acquires an exclusive lock on a camera for a given client ID. Must be called before CaptureImage or StreamFrames.',
+        params: [{ name: 'ctx', type: 'Context' }, { name: 'deviceID', type: 'string' }, { name: 'clientID', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">CameraManager</span>) <span class="fn">LockCamera</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">deviceID</span>, <span class="vr">clientID</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">CameraManager</span>.<span class="fn">LockCamera</span>(<span class="vr">ctx</span>, <span class="st">"/dev/video0"</span>, <span class="st">"myapp"</span>)`) },
+      },
+      {
+        id: 'cam-unlock', name: 'UnlockCamera',
+        desc: 'Releases the lock obtained with LockCamera.',
+        params: [{ name: 'ctx', type: 'Context' }, { name: 'deviceID', type: 'string' }, { name: 'clientID', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">CameraManager</span>) <span class="fn">UnlockCamera</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">deviceID</span>, <span class="vr">clientID</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">CameraManager</span>.<span class="fn">UnlockCamera</span>(<span class="vr">ctx</span>, <span class="st">"/dev/video0"</span>, <span class="st">"myapp"</span>)`) },
+      },
+      {
+        id: 'cam-capture', name: 'CaptureImage',
+        desc: 'Captures a single frame from a camera device. Requires LockCamera first.',
+        params: [
+          { name: 'ctx',      type: 'Context' },
+          { name: 'deviceID', type: 'string' },
+          { name: 'width',    type: 'int32' },
+          { name: 'height',   type: 'int32' },
+          { name: 'format',   type: 'string', desc: '"mjpeg" or "yuyv"' },
+        ],
+        returns: [{ name: '*CaptureImageResult' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">CameraManager</span>) <span class="fn">CaptureImage</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">deviceID</span> <span class="kw">string</span>, <span class="vr">width</span>, <span class="vr">height</span> <span class="kw">int32</span>, <span class="vr">format</span> <span class="kw">string</span>) (*<span class="tp">CaptureImageResult</span>, <span class="kw">error</span>)`,`<span class="vr">img</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">CameraManager</span>.<span class="fn">CaptureImage</span>(<span class="vr">ctx</span>, <span class="st">"/dev/video0"</span>, <span class="st">1280</span>, <span class="st">720</span>, <span class="st">"mjpeg"</span>)`) },
+      },
+      {
+        id: 'cam-stream', name: 'StreamFrames',
+        desc: 'Opens a server-streaming frame stream at the requested FPS and resolution. Read from the stream until io.EOF or error.',
+        params: [{ name: 'ctx', type: 'Context' }, { name: 'req', type: '*StreamFramesRequest' }],
+        returns: [{ name: 'ServerStream[Frame]' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">CameraManager</span>) <span class="fn">StreamFrames</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">req</span> *<span class="tp">StreamFramesRequest</span>) (<span class="tp">ServerStream</span>[<span class="tp">Frame</span>], <span class="kw">error</span>)`,`<span class="vr">stream</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">CameraManager</span>.<span class="fn">StreamFrames</span>(<span class="vr">ctx</span>, &<span class="tp">StreamFramesRequest</span>{\n    <span class="vr">DeviceId</span>: <span class="st">"/dev/video0"</span>, <span class="vr">Fps</span>: <span class="st">30</span>, <span class="vr">Width</span>: <span class="st">1280</span>, <span class="vr">Height</span>: <span class="st">720</span>,\n})\n<span class="kw">for</span> {\n    <span class="vr">frame</span>, <span class="vr">err</span> := <span class="vr">stream</span>.<span class="fn">Recv</span>()\n    <span class="kw">if</span> <span class="vr">err</span> == io.EOF { <span class="kw">break</span> }\n}`) },
+      },
+    ],
+  },
+  {
+    id: 'ai', name: 'AIManager',
+    desc: 'On-device AI model management and inference. LoadModel / UploadAndLoadModel return an AIModel handle — inference and lifecycle operations are called on the handle.',
+    checked: true,
+    permission: 'AiService/*',
+    methods: [
+      { group: 'AIManager' },
+      {
+        id: 'ai-list', name: 'ListModels',
+        desc: 'Returns metadata for all currently loaded models.',
+        params: [],
+        returns: [{ name: '[]*ModelInfo' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AIManager</span>) <span class="fn">ListModels</span>() ([]*<span class="tp">ModelInfo</span>, <span class="kw">error</span>)`,`<span class="vr">models</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AIManager</span>.<span class="fn">ListModels</span>()`) },
+      },
+      {
+        id: 'ai-load', name: 'LoadModel',
+        desc: 'Loads a model already present on the device filesystem. Returns an AIModel handle.',
+        params: [
+          { name: 'modelID',   type: 'string' },
+          { name: 'modelPath', type: 'string', desc: 'Absolute path on the device' },
+          { name: 'backend',   type: 'ModelBackend' },
+          { name: 'execution', type: 'ExecutionMode' },
+        ],
+        returns: [{ name: '*AIModel' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AIManager</span>) <span class="fn">LoadModel</span>(<span class="vr">modelID</span>, <span class="vr">modelPath</span> <span class="kw">string</span>, <span class="vr">backend</span> <span class="tp">ModelBackend</span>, <span class="vr">execution</span> <span class="tp">ExecutionMode</span>) (*<span class="tp">AIModel</span>, <span class="kw">error</span>)`,`<span class="vr">model</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AIManager</span>.<span class="fn">LoadModel</span>(\n    <span class="st">"detector"</span>, <span class="st">"/models/yolo.onnx"</span>,\n    <span class="vr">ModelBackend_ONNX</span>, <span class="vr">ExecutionMode_EXEC_CPU</span>,\n)`) },
+      },
+      {
+        id: 'ai-upload', name: 'UploadAndLoadModel',
+        desc: 'Streams a local model file to the device in chunks then loads it. Returns an AIModel handle.',
+        params: [
+          { name: 'modelID',   type: 'string' },
+          { name: 'localPath', type: 'string', desc: 'Path to the model file on the host' },
+          { name: 'backend',   type: 'ModelBackend' },
+          { name: 'execution', type: 'ExecutionMode' },
+        ],
+        returns: [{ name: '*AIModel' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AIManager</span>) <span class="fn">UploadAndLoadModel</span>(<span class="vr">modelID</span>, <span class="vr">localPath</span> <span class="kw">string</span>, <span class="vr">backend</span> <span class="tp">ModelBackend</span>, <span class="vr">execution</span> <span class="tp">ExecutionMode</span>) (*<span class="tp">AIModel</span>, <span class="kw">error</span>)`,`<span class="vr">model</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AIManager</span>.<span class="fn">UploadAndLoadModel</span>(\n    <span class="st">"detector"</span>, <span class="st">"./yolo.onnx"</span>,\n    <span class="vr">ModelBackend_ONNX</span>, <span class="vr">ExecutionMode_EXEC_CPU</span>,\n)`) },
+      },
+      { group: 'AIModel' },
+      {
+        id: 'ai-unload', name: 'Unload',
+        desc: 'Frees the model from the inference backend.',
+        params: [],
+        returns: [{ name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AIModel</span>) <span class="fn">Unload</span>() <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">model</span>.<span class="fn">Unload</span>()`) },
+      },
+      {
+        id: 'ai-isloaded', name: 'IsLoaded',
+        desc: 'Returns whether the model is loaded and its tensor schema.',
+        params: [],
+        returns: [{ name: '*IsModelLoadedResponse' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AIModel</span>) <span class="fn">IsLoaded</span>() (*<span class="tp">IsModelLoadedResponse</span>, <span class="kw">error</span>)`,`<span class="vr">r</span>, <span class="vr">err</span> := <span class="vr">model</span>.<span class="fn">IsLoaded</span>()`) },
+      },
+      {
+        id: 'ai-infer', name: 'Infer',
+        desc: 'Runs a single synchronous forward pass. inputShape nil uses the schema from load.',
+        params: [
+          { name: 'ctx',        type: 'Context' },
+          { name: 'inputData',  type: '[]byte', desc: 'Raw little-endian bytes' },
+          { name: 'inputShape', type: '[]int32', desc: 'nil = use schema from LoadModel' },
+          { name: 'dtype',      type: 'TensorDataType' },
+        ],
+        returns: [{ name: '*InferResponse' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AIModel</span>) <span class="fn">Infer</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">inputData</span> []<span class="kw">byte</span>, <span class="vr">inputShape</span> []<span class="kw">int32</span>, <span class="vr">dtype</span> <span class="tp">TensorDataType</span>) (*<span class="tp">InferResponse</span>, <span class="kw">error</span>)`,`<span class="vr">resp</span>, <span class="vr">err</span> := <span class="vr">model</span>.<span class="fn">Infer</span>(<span class="vr">ctx</span>, <span class="vr">inputData</span>, []<span class="kw">int32</span>{<span class="st">1</span>, <span class="st">3</span>, <span class="st">640</span>, <span class="st">640</span>}, <span class="vr">TensorDataType_TENSOR_FLOAT32</span>)`) },
+      },
+      {
+        id: 'ai-streaminfer', name: 'StreamInfer',
+        desc: 'Opens a bidirectional inference stream. Returns an AIInferStream handle.',
+        params: [{ name: 'ctx', type: 'Context' }],
+        returns: [{ name: '*AIInferStream' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AIModel</span>) <span class="fn">StreamInfer</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>) (*<span class="tp">AIInferStream</span>, <span class="kw">error</span>)`,`<span class="vr">s</span>, <span class="vr">err</span> := <span class="vr">model</span>.<span class="fn">StreamInfer</span>(<span class="vr">ctx</span>)`) },
+      },
+      { group: 'AIInferStream' },
+      {
+        id: 'ai-stream-send', name: 'Send',
+        desc: 'Submits an inference request on the stream.',
+        params: [
+          { name: 'inputData',  type: '[]byte' },
+          { name: 'inputShape', type: '[]int32' },
+          { name: 'dtype',      type: 'TensorDataType' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">AIInferStream</span>) <span class="fn">Send</span>(<span class="vr">inputData</span> []<span class="kw">byte</span>, <span class="vr">inputShape</span> []<span class="kw">int32</span>, <span class="vr">dtype</span> <span class="tp">TensorDataType</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">s</span>.<span class="fn">Send</span>(<span class="vr">inputData</span>, <span class="kw">nil</span>, <span class="vr">TensorDataType_TENSOR_FLOAT32</span>)`) },
+      },
+      {
+        id: 'ai-stream-recv', name: 'Recv',
+        desc: 'Reads the next inference result. Returns io.EOF when the server closes the stream.',
+        params: [],
+        returns: [{ name: '*InferResponse' }, { name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">AIInferStream</span>) <span class="fn">Recv</span>() (*<span class="tp">InferResponse</span>, <span class="kw">error</span>)`,`<span class="vr">resp</span>, <span class="vr">err</span> := <span class="vr">s</span>.<span class="fn">Recv</span>()`) },
+      },
+      {
+        id: 'ai-stream-close', name: 'Close',
+        desc: 'Signals the end of the send side of the stream.',
+        params: [],
+        returns: [{ name: 'error', type: 'error' }],
+        code: { go: sig(`<span class="kw">func</span> (<span class="vr">s</span> *<span class="tp">AIInferStream</span>) <span class="fn">Close</span>() <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">s</span>.<span class="fn">Close</span>()`) },
+      },
+    ],
+  },
+  {
+    id: 'firewall', name: 'FirewallManager',
+    desc: 'Network firewall zone and rule management.',
+    permission: 'FirewallService/*',
+    checked: true,
+    methods: [
+      { group: 'Zones' },
+      {
+        id: 'fw-listzones', name: 'ListZones',
+        desc: 'Returns all configured firewall zones.',
+        params: [],
+        returns: [{ name: '[]*ZoneRequest' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">ListZones</span>() ([]*<span class="tp">ZoneRequest</span>, <span class="kw">error</span>)`,`<span class="vr">zones</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">ListZones</span>()`)        },
+      },
+      {
+        id: 'fw-addzone', name: 'AddZone',
+        desc: 'Creates a new firewall zone.',
+        params: [
+          { name: 'name',         type: 'string' },
+          { name: 'interfaces',   type: '[]string' },
+          { name: 'inputPolicy',  type: 'ZonePolicy' },
+          { name: 'outputPolicy', type: 'ZonePolicy' },
+          { name: 'masquerade',   type: 'bool' },
+        ],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">AddZone</span>(<span class="vr">name</span> <span class="kw">string</span>, <span class="vr">interfaces</span> []<span class="kw">string</span>, <span class="vr">inputPolicy</span>, <span class="vr">outputPolicy</span> <span class="tp">ZonePolicy</span>, <span class="vr">masquerade</span> <span class="kw">bool</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">AddZone</span>(<span class="st">"lan"</span>, []<span class="kw">string</span>{<span class="st">"eth0"</span>}, <span class="vr">ZonePolicy_ACCEPT</span>, <span class="vr">ZonePolicy_ACCEPT</span>, <span class="kw">false</span>)`)        },
+      },
+      {
+        id: 'fw-removezone', name: 'RemoveZone',
+        desc: 'Deletes a firewall zone by name.',
+        params: [{ name: 'name', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">RemoveZone</span>(<span class="vr">name</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">RemoveZone</span>(<span class="st">"lan"</span>)`)        },
+      },
+      { group: 'Rules' },
+      {
+        id: 'fw-listrules', name: 'ListRules',
+        desc: 'Returns all configured firewall rules.',
+        params: [],
+        returns: [{ name: '[]*FirewallRule' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">ListRules</span>() ([]*<span class="tp">FirewallRule</span>, <span class="kw">error</span>)`,`<span class="vr">rules</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">ListRules</span>()`)        },
+      },
+      {
+        id: 'fw-addrule', name: 'AddRule',
+        desc: 'Adds a traffic rule between two zones.',
+        params: [
+          { name: 'srcZone',  type: 'string' },
+          { name: 'dstZone',  type: 'string' },
+          { name: 'protocol', type: 'FirewallProtocol', desc: 'PROTO_ANY | PROTO_TCP | PROTO_UDP | PROTO_ICMP' },
+          { name: 'srcIP',    type: 'string', desc: 'CIDR or empty for any' },
+          { name: 'destPort', type: 'int32',  desc: '0 for any' },
+          { name: 'action',   type: 'ZonePolicy' },
+          { name: 'comment',  type: 'string' },
+        ],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">AddRule</span>(<span class="vr">srcZone</span>, <span class="vr">dstZone</span> <span class="kw">string</span>, <span class="vr">protocol</span> <span class="tp">FirewallProtocol</span>, <span class="vr">srcIP</span> <span class="kw">string</span>, <span class="vr">destPort</span> <span class="kw">int32</span>, <span class="vr">action</span> <span class="tp">ZonePolicy</span>, <span class="vr">comment</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">AddRule</span>(<span class="st">"lan"</span>, <span class="st">"wan"</span>, <span class="vr">FirewallProtocol_TCP</span>, <span class="st">""</span>, <span class="st">443</span>, <span class="vr">ZonePolicy_ACCEPT</span>, <span class="st">"allow HTTPS"</span>)`)        },
+      },
+      {
+        id: 'fw-removerule', name: 'RemoveRule',
+        desc: 'Removes a traffic rule by its ID.',
+        params: [{ name: 'id', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">RemoveRule</span>(<span class="vr">id</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">RemoveRule</span>(<span class="vr">ruleID</span>)`)        },
+      },
+      {
+        id: 'fw-flushrules', name: 'FlushRules',
+        desc: 'Removes all traffic rules (zones are preserved).',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">FlushRules</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">FlushRules</span>()`)        },
+      },
+      {
+        id: 'fw-apply', name: 'ApplyFirewall',
+        desc: 'Commits all pending zone and rule changes to the active firewall.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">f</span> *<span class="tp">FirewallManager</span>) <span class="fn">ApplyFirewall</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">FirewallManager</span>.<span class="fn">ApplyFirewall</span>()`)        },
+      },
+    ],
+  },
+  {
+    id: 'vpn', name: 'VPNManager',
+    desc: 'VPN profile management and connection control.',
+    permission: 'VpnService/*',
+    checked: true,
+    methods: [
+      { group: 'Capabilities' },
+      {
+        id: 'vpn-caps', name: 'GetCapabilities',
+        desc: 'Reports which VPN providers are available on the device.',
+        params: [],
+        returns: [{ name: '*VpnCapabilities' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">GetCapabilities</span>() (*<span class="tp">VpnCapabilities</span>, <span class="kw">error</span>)`,`<span class="vr">caps</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">GetCapabilities</span>()`)        },
+      },
+      { group: 'Profiles' },
+      {
+        id: 'vpn-listprofiles', name: 'ListProfiles',
+        desc: 'Returns all saved VPN profiles (config data not included).',
+        params: [],
+        returns: [{ name: '[]*VpnProfile' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">ListProfiles</span>() ([]*<span class="tp">VpnProfile</span>, <span class="kw">error</span>)`,`<span class="vr">profiles</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">ListProfiles</span>()`)        },
+      },
+      {
+        id: 'vpn-applyprofile', name: 'ApplyProfile',
+        desc: 'Creates or updates a VPN profile. If ProfileId is empty the server assigns one.',
+        params: [
+          { name: 'profile',           type: '*VpnProfile' },
+          { name: 'connectAfterApply', type: 'bool' },
+        ],
+        returns: [{ name: 'profileID', type: 'string' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">ApplyProfile</span>(<span class="vr">profile</span> *<span class="tp">VpnProfile</span>, <span class="vr">connectAfterApply</span> <span class="kw">bool</span>) (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">id</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">ApplyProfile</span>(<span class="vr">profile</span>, <span class="kw">false</span>)`)        },
+      },
+      {
+        id: 'vpn-wg', name: 'ApplyWireGuard',
+        desc: 'Convenience wrapper — creates or updates a WireGuard profile from a raw .conf file.',
+        params: [
+          { name: 'displayName', type: 'string' },
+          { name: 'configData',  type: '[]byte', desc: 'Raw WireGuard .conf content' },
+          { name: 'autoConnect', type: 'bool' },
+        ],
+        returns: [{ name: 'profileID', type: 'string' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">ApplyWireGuard</span>(<span class="vr">displayName</span> <span class="kw">string</span>, <span class="vr">configData</span> []<span class="kw">byte</span>, <span class="vr">autoConnect</span> <span class="kw">bool</span>) (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">id</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">ApplyWireGuard</span>(<span class="st">"office"</span>, <span class="vr">confBytes</span>, <span class="kw">true</span>)`)        },
+      },
+      {
+        id: 'vpn-ovpn', name: 'ApplyOpenVPN',
+        desc: 'Convenience wrapper — creates or updates an OpenVPN profile from a raw .ovpn file.',
+        params: [
+          { name: 'displayName', type: 'string' },
+          { name: 'configData',  type: '[]byte', desc: 'Raw .ovpn file content' },
+          { name: 'autoConnect', type: 'bool' },
+        ],
+        returns: [{ name: 'profileID', type: 'string' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">ApplyOpenVPN</span>(<span class="vr">displayName</span> <span class="kw">string</span>, <span class="vr">configData</span> []<span class="kw">byte</span>, <span class="vr">autoConnect</span> <span class="kw">bool</span>) (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">id</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">ApplyOpenVPN</span>(<span class="st">"corp"</span>, <span class="vr">ovpnBytes</span>, <span class="kw">false</span>)`)        },
+      },
+      {
+        id: 'vpn-removeprofile', name: 'RemoveProfile',
+        desc: 'Deletes a VPN profile by ID (disconnects first if active).',
+        params: [{ name: 'profileID', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">RemoveProfile</span>(<span class="vr">profileID</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">RemoveProfile</span>(<span class="vr">profileID</span>)`)        },
+      },
+      { group: 'Connection' },
+      {
+        id: 'vpn-connect', name: 'Connect',
+        desc: 'Activates a VPN profile and returns the session ID. The tunnel comes up asynchronously — use WatchEvents or GetStatus to track.',
+        params: [{ name: 'profileID', type: 'string' }],
+        returns: [{ name: 'sessionID', type: 'string' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">Connect</span>(<span class="vr">profileID</span> <span class="kw">string</span>) (<span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">sessionID</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">Connect</span>(<span class="vr">profileID</span>)`)        },
+      },
+      {
+        id: 'vpn-disconnect', name: 'Disconnect',
+        desc: 'Tears down the active tunnel for the given profile. Pass empty string to disconnect the currently active profile.',
+        params: [{ name: 'profileID', type: 'string' }],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">Disconnect</span>(<span class="vr">profileID</span> <span class="kw">string</span>) (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">Disconnect</span>(<span class="vr">profileID</span>)`)        },
+      },
+      { group: 'Status' },
+      {
+        id: 'vpn-getstatus', name: 'GetStatus',
+        desc: 'Returns the current active session and provider details. Session is nil when no tunnel is active.',
+        params: [],
+        returns: [{ name: '*Session' }, { name: 'providerDetails', type: 'string' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">GetStatus</span>() (*<span class="tp">Session</span>, <span class="kw">string</span>, <span class="kw">error</span>)`,`<span class="vr">sess</span>, <span class="vr">details</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">GetStatus</span>()`)        },
+      },
+      {
+        id: 'vpn-listsessions', name: 'ListSessions',
+        desc: 'Returns all active sessions (at most one in the current implementation).',
+        params: [],
+        returns: [{ name: '[]*Session' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">ListSessions</span>() ([]*<span class="tp">Session</span>, <span class="kw">error</span>)`,`<span class="vr">sessions</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">ListSessions</span>()`)        },
+      },
+      {
+        id: 'vpn-isconnected', name: 'IsConnected',
+        desc: 'Reports whether there is an active tunnel in state UP.',
+        params: [],
+        returns: [{ name: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">IsConnected</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">connected</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">IsConnected</span>()`)        },
+      },
+      {
+        id: 'vpn-watchevents', name: 'WatchEvents',
+        desc: 'Streams VPN tunnel events. Blocks until ctx is cancelled or the server closes the connection. Pass empty profileID to receive events from all profiles.',
+        params: [
+          { name: 'ctx',       type: 'Context' },
+          { name: 'profileID', type: 'string', desc: 'empty = all profiles' },
+          { name: 'handler',   type: 'func(*VPNEvent)' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">v</span> *<span class="tp">VPNManager</span>) <span class="fn">WatchEvents</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">profileID</span> <span class="kw">string</span>, <span class="vr">handler</span> <span class="kw">func</span>(*<span class="tp">VPNEvent</span>)) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">VPNManager</span>.<span class="fn">WatchEvents</span>(<span class="vr">ctx</span>, <span class="st">""</span>, <span class="kw">func</span>(<span class="vr">e</span> *<span class="tp">VPNEvent</span>) {\n    fmt.Println(<span class="vr">e</span>.<span class="fn">GetState</span>())\n})`)        },
+      },
+    ],
+  },
+  {
+    id: 'apphub', name: 'AppHubManager',
+    desc: 'Service registration and HTTP routing via the Orbit app hub.',
+    permission: 'AppHubService/*',
+    checked: true,
+    methods: [
+      { group: 'Registration' },
+      {
+        id: 'apphub-webui', name: 'RegisterWebUI',
+        desc: 'Convenience wrapper — registers a local HTTP server with a TCP health-check. Prefer this for the common case.',
+        params: [
+          { name: 'addr',  type: 'string', desc: '"host:port" or ":port"' },
+          { name: 'route', type: 'string', desc: 'Path prefix to proxy, e.g. "/myapp"' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">RegisterWebUI</span>(<span class="vr">addr</span>, <span class="vr">route</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">RegisterWebUI</span>(<span class="st">"127.0.0.1:9033"</span>, <span class="st">"/myapp"</span>)`)        },
+      },
+      {
+        id: 'apphub-register', name: 'RegisterService',
+        desc: 'Announces the app\'s HTTP server to the portal with full control over routes and health check.',
+        params: [{ name: 'req', type: '*RegisterServiceRequest' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">RegisterService</span>(<span class="vr">req</span> *<span class="tp">RegisterServiceRequest</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">RegisterService</span>(<span class="vr">req</span>)`)        },
+      },
+      {
+        id: 'apphub-unregister', name: 'UnregisterService',
+        desc: 'Removes the app\'s registration from the portal. Safe to call on shutdown.',
+        params: [],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">UnregisterService</span>() <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">UnregisterService</span>()`)        },
+      },
+      { group: 'Discovery' },
+      {
+        id: 'apphub-getservice', name: 'GetService',
+        desc: 'Returns registration details for a given service ID.',
+        params: [{ name: 'serviceID', type: 'string' }],
+        returns: [{ name: '*Service' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">GetService</span>(<span class="vr">serviceID</span> <span class="kw">string</span>) (*<span class="tp">Service</span>, <span class="kw">error</span>)`,`<span class="vr">svc</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">GetService</span>(<span class="st">"my-service-id"</span>)`)        },
+      },
+      {
+        id: 'apphub-listservices', name: 'ListServices',
+        desc: 'Returns all services currently registered in the portal.',
+        params: [],
+        returns: [{ name: '[]*Service' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">ListServices</span>() ([]*<span class="tp">Service</span>, <span class="kw">error</span>)`,`<span class="vr">services</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">ListServices</span>()`)        },
+      },
+      { group: 'Routes' },
+      {
+        id: 'apphub-addroute', name: 'AddRoute',
+        desc: 'Adds an extra path prefix to the already-registered service.',
+        params: [{ name: 'path', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">AddRoute</span>(<span class="vr">path</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">AddRoute</span>(<span class="st">"/api/v2"</span>)`)        },
+      },
+      {
+        id: 'apphub-removeroute', name: 'RemoveRoute',
+        desc: 'Removes a path prefix from the registered service.',
+        params: [{ name: 'path', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">RemoveRoute</span>(<span class="vr">path</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">RemoveRoute</span>(<span class="st">"/api/v1"</span>)`)        },
+      },
+      {
+        id: 'apphub-routingtable', name: 'GetRoutingTable',
+        desc: 'Returns all current proxy routing entries.',
+        params: [],
+        returns: [{ name: '[]*RoutingEntry' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">GetRoutingTable</span>() ([]*<span class="tp">RoutingEntry</span>, <span class="kw">error</span>)`,`<span class="vr">entries</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">GetRoutingTable</span>()`)        },
+      },
+      { group: 'Events' },
+      {
+        id: 'apphub-watchservices', name: 'WatchServices',
+        desc: 'Streams service lifecycle events. Blocks until ctx is cancelled or the server closes.',
+        params: [
+          { name: 'ctx',     type: 'Context' },
+          { name: 'handler', type: 'func(*ServiceEvent)' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">m</span> *<span class="tp">AppHubManager</span>) <span class="fn">WatchServices</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">handler</span> <span class="kw">func</span>(*<span class="tp">ServiceEvent</span>)) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">AppHubManager</span>.<span class="fn">WatchServices</span>(<span class="vr">ctx</span>, <span class="kw">func</span>(<span class="vr">e</span> *<span class="tp">ServiceEvent</span>) {\n    fmt.Println(<span class="vr">e</span>.<span class="fn">GetType</span>(), <span class="vr">e</span>.<span class="fn">GetService</span>().<span class="fn">GetServiceId</span>())\n})`)        },
+      },
+    ],
+  },
+  {
+    id: 'event', name: 'EventManager',
+    desc: 'System-wide event bus.',
+    permission: 'EventService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'event-subscribe', name: 'Subscribe',
+        desc: 'Subscribes to system events. Calls handler for each event. Blocks until context is cancelled.',
+        params: [
+          { name: 'ctx',     type: 'Context' },
+          { name: 'handler', type: 'func(*Event)' },
+          { name: 'types',   type: '...EventType', desc: 'Omit to receive all events (EVENT_APP_INSTALLED, EVENT_APP_REMOVED, EVENT_APP_STARTED, etc.)' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">e</span> *<span class="tp">EventManager</span>) <span class="fn">Subscribe</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">handler</span> <span class="kw">func</span>(*<span class="tp">Event</span>), <span class="vr">types</span> ...<span class="tp">EventType</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">EventManager</span>.<span class="fn">Subscribe</span>(<span class="vr">ctx</span>, <span class="kw">func</span>(<span class="vr">e</span> *<span class="tp">Event</span>) {\n    fmt.Println(<span class="vr">e</span>.<span class="vr">Type</span>, <span class="vr">e</span>.<span class="vr">Payload</span>)\n}, <span class="vr">client</span>.<span class="vr">EVENT_APP_STARTED</span>)`)        },
+      },
+    ],
+  },
+  {
+    id: 'development', name: 'DevelopmentManager',
+    desc: 'Live log streaming from running applications.',
+    permission: 'DevelopmentService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'dev-logs', name: 'SubscribeLogs',
+        desc: 'Streams log entries matching the given filter. Blocks until context is cancelled.',
+        params: [
+          { name: 'ctx',   type: 'Context' },
+          { name: 'app',   type: 'string', desc: 'app name filter (empty = all)' },
+          { name: 'tag',   type: 'string', desc: 'tag filter (empty = all)' },
+          { name: 'level', type: 'LogLevel', desc: 'minimum log level (LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_WARNING, LOG_LEVEL_ERROR, LOG_LEVEL_FATAL)' },
+          { name: 'onEntry', type: 'func(LogEntry)' },
+        ],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">d</span> *<span class="tp">DevelopmentManager</span>) <span class="fn">SubscribeLogs</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">app</span> <span class="kw">string</span>, <span class="vr">tag</span> <span class="kw">string</span>, <span class="vr">level</span> <span class="tp">LogLevel</span>, <span class="vr">onEntry</span> <span class="kw">func</span>(<span class="tp">LogEntry</span>)) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">DevelopmentManager</span>.<span class="fn">SubscribeLogs</span>(<span class="vr">ctx</span>, <span class="st">"myapp"</span>, <span class="st">""</span>, <span class="vr">client</span>.<span class="vr">LOG_LEVEL_INFO</span>, <span class="kw">func</span>(<span class="vr">e</span> <span class="tp">LogEntry</span>) {\n    fmt.Println(<span class="vr">e</span>.<span class="vr">Timestamp</span>, <span class="vr">e</span>.<span class="vr">Message</span>)\n})`)        },
+      },
+      {
+        id: 'dev-logs-async', name: 'SubscribeLogsAsync',
+        desc: 'Starts SubscribeLogs in a goroutine with automatic reconnection. Returns a channel.',
+        params: [
+          { name: 'ctx',   type: 'Context' },
+          { name: 'app',   type: 'string', desc: 'app name filter (empty = all)' },
+          { name: 'tag',   type: 'string', desc: 'tag filter (empty = all)' },
+          { name: 'level', type: 'LogLevel', desc: 'minimum log level (LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_WARNING, LOG_LEVEL_ERROR, LOG_LEVEL_FATAL)' },
+        ],
+        returns: [{ name: '<-chan LogEntry', type: 'chan' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">d</span> *<span class="tp">DevelopmentManager</span>) <span class="fn">SubscribeLogsAsync</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">app</span> <span class="kw">string</span>, <span class="vr">tag</span> <span class="kw">string</span>, <span class="vr">level</span> <span class="tp">LogLevel</span>) <-<span class="kw">chan</span> <span class="tp">LogEntry</span>`,`<span class="vr">ch</span> := <span class="vr">client</span>.<span class="vr">DevelopmentManager</span>.<span class="fn">SubscribeLogsAsync</span>(<span class="vr">ctx</span>, <span class="st">"myapp"</span>, <span class="st">""</span>, <span class="vr">client</span>.<span class="vr">LOG_LEVEL_INFO</span>)`)        },
+      },
+    ],
+  },
+  {
+    id: 'update', name: 'UpdateManager',
+    desc: 'OTA firmware update and factory reset.',
+    permission: 'UpdateService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'update-ota', name: 'Update',
+        desc: 'Sends a .orbit system image to the device to perform an OS update.',
+        params: [{ name: 'ctx', type: 'Context' }, { name: 'orbitPath', type: 'string' }],
+        returns: [{ name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">u</span> *<span class="tp">UpdateManager</span>) <span class="fn">Update</span>(<span class="vr">ctx</span> <span class="tp">context.Context</span>, <span class="vr">orbitPath</span> <span class="kw">string</span>) <span class="kw">error</span>`,`<span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">UpdateManager</span>.<span class="fn">Update</span>(<span class="vr">ctx</span>, <span class="st">"/path/to/update.orbit"</span>)`)        },
+      },
+      {
+        id: 'update-factory', name: 'FactoryReset',
+        desc: 'Performs a factory reset, erasing all user data.',
+        params: [],
+        returns: [{ name: 'ok', type: 'bool' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">u</span> *<span class="tp">UpdateManager</span>) <span class="fn">FactoryReset</span>() (<span class="kw">bool</span>, <span class="kw">error</span>)`,`<span class="vr">ok</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">UpdateManager</span>.<span class="fn">FactoryReset</span>()`)        },
+      },
+    ],
+  },
+  {
+    id: 'power', name: 'PowerManager',
+    desc: 'Device power control.',
+    permission: 'PowerService/*',
+    checked: true,
+    methods: [
+      {
+        id: 'power-reboot', name: 'Reboot',
+        desc: 'Reboots the device.',
+        params: [{ name: 'force', type: 'bool' }, { name: 'reason', type: 'string' }],
+        returns: [{ name: '*PowerResult', type: '', desc: '{ Success, Message }' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">PowerManager</span>) <span class="fn">Reboot</span>(<span class="vr">force</span> <span class="kw">bool</span>, <span class="vr">reason</span> <span class="kw">string</span>) (*<span class="tp">PowerResult</span>, <span class="kw">error</span>)`,`<span class="vr">res</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PowerManager</span>.<span class="fn">Reboot</span>(<span class="kw">false</span>, <span class="st">"update"</span>)`)        },
+      },
+      {
+        id: 'power-shutdown', name: 'Shutdown',
+        desc: 'Shuts down the device.',
+        params: [{ name: 'force', type: 'bool' }, { name: 'reason', type: 'string' }],
+        returns: [{ name: '*PowerResult', type: '', desc: '{ Success, Message }' }, { name: 'error', type: 'error' }],
+        code: {
+          go: sig(`<span class="kw">func</span> (<span class="vr">p</span> *<span class="tp">PowerManager</span>) <span class="fn">Shutdown</span>(<span class="vr">force</span> <span class="kw">bool</span>, <span class="vr">reason</span> <span class="kw">string</span>) (*<span class="tp">PowerResult</span>, <span class="kw">error</span>)`,`<span class="vr">res</span>, <span class="vr">err</span> := <span class="vr">client</span>.<span class="vr">PowerManager</span>.<span class="fn">Shutdown</span>(<span class="kw">false</span>, <span class="st">"maintenance"</span>)`)        },
+      },
+    ],
+  },
+];
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+const types = [
+  {
+    id: 'type-gpiopin', name: 'GpioPin',
+    desc: 'Identifies a GPIO line by chip index and line offset.',
+    fields: [
+      { name: 'Name',       type: 'string', desc: 'Human-readable pin name (e.g. "GPIO17", "PWM0_OUT")' },
+      { name: 'Number',     type: 'int32',  desc: 'Line offset within the chip' },
+      { name: 'ChipNumber', type: 'int32',  desc: 'Chip index (0 = /dev/gpiochip0)' },
+    ],
+  },
+  {
+    id: 'type-gpiodirection', name: 'GpioDirection',
+    desc: 'GPIO pin direction enum.',
+    fields: [
+      { name: 'GPIO_DIR_OUT', type: '0', desc: 'Output' },
+      { name: 'GPIO_DIR_IN',  type: '1', desc: 'Input' },
+    ],
+  },
+  {
+    id: 'type-gpiolevel', name: 'GpioLevel',
+    desc: 'GPIO pin logic level enum.',
+    fields: [
+      { name: 'GPIO_LEVEL_LOW',  type: '0', desc: '' },
+      { name: 'GPIO_LEVEL_HIGH', type: '1', desc: '' },
+    ],
+  },
+  {
+    id: 'type-uartconfig', name: 'UartConfig',
+    desc: 'Configuration used to open a UART port.',
+    fields: [
+      { name: 'Port',        type: 'string',          desc: 'Port name (e.g. "ttyS0", "ttyAMA0")' },
+      { name: 'Baudrate',    type: 'int',             desc: 'Baud rate (e.g. 9600, 115200)' },
+      { name: 'DataBits',    type: 'int',             desc: '5, 6, 7 or 8' },
+      { name: 'Parity',      type: 'UartParity',      desc: 'None / Even / Odd' },
+      { name: 'StopBits',    type: 'UartStopBits',    desc: '1 or 2 stop bits' },
+      { name: 'FlowControl', type: 'UartFlowControl', desc: 'None / Hardware (RTS/CTS) / Software (XON/XOFF)' },
+    ],
+  },
+  {
+    id: 'type-uartparity', name: 'UartParity',
+    desc: 'Parity mode for a UART port.',
+    fields: [
+      { name: 'UartParityNone', type: '0', desc: 'No parity' },
+      { name: 'UartParityEven', type: '1', desc: 'Even parity' },
+      { name: 'UartParityOdd',  type: '2', desc: 'Odd parity' },
+    ],
+  },
+  {
+    id: 'type-uartstopbits', name: 'UartStopBits',
+    desc: 'Number of stop bits for a UART port.',
+    fields: [
+      { name: 'UartStopBits1', type: '0', desc: '1 stop bit' },
+      { name: 'UartStopBits2', type: '1', desc: '2 stop bits' },
+    ],
+  },
+  {
+    id: 'type-uartflowcontrol', name: 'UartFlowControl',
+    desc: 'Flow control mode for a UART port.',
+    fields: [
+      { name: 'UartFlowNone',     type: '0', desc: 'No flow control' },
+      { name: 'UartFlowHardware', type: '1', desc: 'Hardware flow control (RTS/CTS)' },
+      { name: 'UartFlowSoftware', type: '2', desc: 'Software flow control (XON/XOFF)' },
+    ],
+  },
+  {
+    id: 'type-i2cconfig', name: 'I2CConfig',
+    desc: 'I²C bus configuration as returned by I2CBus.GetConfig().',
+    fields: [
+      { name: 'Bus',             type: 'uint32', desc: '' },
+      { name: 'ClockHz',         type: 'uint32', desc: '' },
+      { name: 'TenBitAddr',      type: 'bool',   desc: '' },
+      { name: 'ClockStretching', type: 'bool',   desc: '' },
+    ],
+  },
+  {
+    id: 'type-i2cbus', name: 'I2CBus',
+    desc: 'Handle to a specific I²C bus returned by I2CManager.Open().',
+    fields: [
+      { name: '(bus number stored internally)', type: '', desc: '' },
+    ],
+  },
+  {
+    id: 'type-spiconfig', name: 'SpiConfig',
+    desc: 'SPI device configuration as returned by SpiDevice.GetConfig().',
+    fields: [
+      { name: 'Bus',         type: 'uint32', desc: '' },
+      { name: 'ChipSelect',  type: 'uint32', desc: '' },
+      { name: 'MaxSpeedHz',  type: 'uint32', desc: '' },
+      { name: 'BitsPerWord', type: 'uint32', desc: '' },
+      { name: 'Mode',        type: 'int',    desc: '0–3 (CPOL/CPHA)' },
+      { name: 'LSBFirst',    type: 'bool',   desc: '' },
+    ],
+  },
+  {
+    id: 'type-spidevice', name: 'SpiDevice',
+    desc: 'Handle to a configured SPI device (bus + chip select) returned by SpiManager.Open().',
+    fields: [
+      { name: '(bus + cs stored internally)', type: '', desc: '' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-response', name: 'MetricsInfoResponse',
+    desc: 'Response returned by SystemManager.GetMetrics.',
+    fields: [
+      { name: 'Metrics', type: '*MetricsInfo', desc: 'System metrics snapshot' },
+      { name: 'Error',   type: '*ErrorInfo',   desc: 'Non-nil when the request failed' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo', name: 'MetricsInfo',
+    desc: 'Full snapshot of system metrics at the time of the call.',
+    fields: [
+      { name: 'SysUptime',            type: '*MetricsInfo_SysUptime',         desc: 'System uptime and load' },
+      { name: 'CpuUsage',             type: 'float64',                        desc: 'Overall CPU usage (0–100 %)' },
+      { name: 'CpuCorePercent',       type: '[]float64',                      desc: 'Per-core CPU usage (0–100 %)' },
+      { name: 'MemoryUsage',          type: 'float64',                        desc: 'Memory usage percentage' },
+      { name: 'SocThermal',           type: 'float64',                        desc: 'SoC temperature (°C)' },
+      { name: 'CpuStats',             type: '*MetricsInfo_CpuStats',          desc: 'CPU context-switch and interrupt counters' },
+      { name: 'CpuFreq',              type: '*MetricsInfo_CpuFreq',           desc: 'CPU frequency info (MHz)' },
+      { name: 'VirtualMemory',        type: '*MetricsInfo_VirtualMemory',     desc: 'Detailed memory breakdown' },
+      { name: 'DiskUsage',            type: 'map[string]*MetricsInfo_DiskUsage', desc: 'Disk usage per mount point' },
+      { name: 'DiskIoCounters',       type: '*MetricsInfo_DiskIoCounters',    desc: 'Disk I/O counters' },
+      { name: 'Network',              type: '*MetricsInfo_Network',           desc: 'Network I/O counters' },
+      { name: 'SensorsTemperatures',  type: 'int32',                          desc: 'Sensor temperature reading' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-sysuptime', name: 'MetricsInfo_SysUptime',
+    desc: 'System uptime and load average.',
+    fields: [
+      { name: 'Time',        type: 'string',    desc: 'Current system time string' },
+      { name: 'Uptime',      type: 'int64',     desc: 'Uptime in seconds' },
+      { name: 'Users',       type: 'int32',     desc: 'Number of logged-in users' },
+      { name: 'LoadAverage', type: '[]float64', desc: '1-min, 5-min, 15-min load averages' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-cpustats', name: 'MetricsInfo_CpuStats',
+    desc: 'CPU context-switch and interrupt counters since boot.',
+    fields: [
+      { name: 'CtxSwitches',    type: 'int64', desc: 'Total context switches' },
+      { name: 'Interrupts',     type: 'int64', desc: 'Total hardware interrupts' },
+      { name: 'SoftInterrupts', type: 'int64', desc: 'Total software interrupts' },
+      { name: 'Syscalls',       type: 'int64', desc: 'Total system calls' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-cpufreq', name: 'MetricsInfo_CpuFreq',
+    desc: 'CPU frequency information in MHz.',
+    fields: [
+      { name: 'Current', type: 'float64', desc: 'Current CPU frequency (MHz)' },
+      { name: 'Min',     type: 'float64', desc: 'Minimum CPU frequency (MHz)' },
+      { name: 'Max',     type: 'float64', desc: 'Maximum CPU frequency (MHz)' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-virtualmemory', name: 'MetricsInfo_VirtualMemory',
+    desc: 'Detailed virtual memory breakdown (all sizes in bytes).',
+    fields: [
+      { name: 'Total',     type: 'int64',   desc: 'Total installed RAM (bytes)' },
+      { name: 'Available', type: 'int64',   desc: 'Available memory (bytes)' },
+      { name: 'Percent',   type: 'float64', desc: 'Usage percentage' },
+      { name: 'Used',      type: 'int64',   desc: 'Used memory (bytes)' },
+      { name: 'Free',      type: 'int64',   desc: 'Free memory (bytes)' },
+      { name: 'Active',    type: 'int64',   desc: 'Active memory (bytes)' },
+      { name: 'Inactive',  type: 'int64',   desc: 'Inactive memory (bytes)' },
+      { name: 'Buffers',   type: 'int64',   desc: 'Buffer cache (bytes)' },
+      { name: 'Cached',    type: 'int64',   desc: 'Page cache (bytes)' },
+      { name: 'Shared',    type: 'int64',   desc: 'Shared memory (bytes)' },
+      { name: 'Slab',      type: 'int64',   desc: 'Kernel slab cache (bytes)' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-diskusage', name: 'MetricsInfo_DiskUsage',
+    desc: 'Disk usage for a single mount point (all sizes in bytes).',
+    fields: [
+      { name: 'Total',   type: 'int64',   desc: 'Total disk size (bytes)' },
+      { name: 'Used',    type: 'int64',   desc: 'Used space (bytes)' },
+      { name: 'Free',    type: 'int64',   desc: 'Free space (bytes)' },
+      { name: 'Percent', type: 'float64', desc: 'Usage percentage' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-diskiocounters', name: 'MetricsInfo_DiskIoCounters',
+    desc: 'Disk I/O counters since boot.',
+    fields: [
+      { name: 'ReadCount',        type: 'int64', desc: 'Number of reads' },
+      { name: 'WriteCount',       type: 'int64', desc: 'Number of writes' },
+      { name: 'ReadBytes',        type: 'int64', desc: 'Bytes read' },
+      { name: 'WriteBytes',       type: 'int64', desc: 'Bytes written' },
+      { name: 'ReadTime',         type: 'int64', desc: 'Time spent reading (ms)' },
+      { name: 'WriteTime',        type: 'int64', desc: 'Time spent writing (ms)' },
+      { name: 'ReadMergedCount',  type: 'int64', desc: 'Merged read operations' },
+      { name: 'WriteMergedCount', type: 'int64', desc: 'Merged write operations' },
+      { name: 'BusyTime',         type: 'int64', desc: 'Time disk was busy (ms)' },
+    ],
+  },
+  {
+    id: 'type-metricsinfo-network', name: 'MetricsInfo_Network',
+    desc: 'Aggregated network I/O counters across all interfaces.',
+    fields: [
+      { name: 'BytesSent',   type: 'int64', desc: 'Total bytes sent' },
+      { name: 'BytesRecv',   type: 'int64', desc: 'Total bytes received' },
+      { name: 'PacketsSent', type: 'int64', desc: 'Total packets sent' },
+      { name: 'PacketsRecv', type: 'int64', desc: 'Total packets received' },
+      { name: 'Errin',       type: 'int64', desc: 'Total input errors' },
+      { name: 'Errout',      type: 'int64', desc: 'Total output errors' },
+      { name: 'Dropin',      type: 'int64', desc: 'Total inbound packets dropped' },
+      { name: 'Dropout',     type: 'int64', desc: 'Total outbound packets dropped' },
+    ],
+  },
+  {
+    id: 'type-ethernetlinkproperties', name: 'EthernetLinkProperties',
+    desc: 'Link-layer and IP properties of an Ethernet interface.',
+    fields: [
+      { name: 'InterfaceName', type: 'string',        desc: 'Interface name (e.g. "eth0")' },
+      { name: 'MacAddress',    type: 'string',        desc: 'MAC address' },
+      { name: 'State',         type: 'EthernetState', desc: 'Current link state' },
+      { name: 'Mtu',           type: 'int32',         desc: 'Maximum transmission unit' },
+      { name: 'DhcpEnable',    type: 'bool',          desc: 'True when DHCP is active' },
+      { name: 'Ipv4Address',   type: 'string',        desc: 'IPv4 address with prefix length (e.g. "192.168.1.10/24")' },
+      { name: 'Ipv4Gateway',   type: 'string',        desc: 'Default IPv4 gateway' },
+      { name: 'Ipv4Dns',       type: '[]string',      desc: 'List of DNS server addresses' },
+    ],
+  },
+  {
+    id: 'type-ethernetstate', name: 'EthernetState',
+    desc: 'Link state of an Ethernet interface.',
+    fields: [
+      { name: 'ETH_UNKNOWN',      type: '0',   desc: 'Unknown state' },
+      { name: 'ETH_UNMANAGED',    type: '10',  desc: 'Device not managed by NetworkManager' },
+      { name: 'ETH_UNAVAILABLE',  type: '20',  desc: 'Device present but not available' },
+      { name: 'ETH_DISCONNECTED', type: '30',  desc: 'Disconnected' },
+      { name: 'ETH_PREPARE',      type: '40',  desc: 'Preparing connection' },
+      { name: 'ETH_CONFIG',       type: '50',  desc: 'Configuring' },
+      { name: 'ETH_NEED_AUTH',    type: '60',  desc: 'Authentication required' },
+      { name: 'ETH_IP_CONFIG',    type: '70',  desc: 'Configuring IP' },
+      { name: 'ETH_IP_CHECK',     type: '80',  desc: 'Verifying IP configuration' },
+      { name: 'ETH_SECONDARIES',  type: '90',  desc: 'Configuring secondary connections' },
+      { name: 'ETH_CONNECTED',    type: '100', desc: 'Connected' },
+      { name: 'ETH_DEACTIVATING', type: '110', desc: 'Deactivating' },
+      { name: 'ETH_FAILED',       type: '120', desc: 'Failed' },
+    ],
+  },
+  {
+    id: 'type-wifilinkproperties', name: 'WiFiLinkProperties',
+    desc: 'Link-layer and mode properties of a Wi-Fi interface.',
+    fields: [
+      { name: 'InterfaceName',    type: 'string',           desc: 'Interface name (e.g. "wlan0")' },
+      { name: 'MacAddress',       type: 'string',           desc: 'MAC address' },
+      { name: 'Mode',             type: 'WiFiMode',         desc: 'Current operating mode' },
+      { name: 'State',            type: 'WiFiState',        desc: 'Current connection state' },
+      { name: 'Mtu',              type: 'int32',            desc: 'Maximum transmission unit' },
+      { name: 'ApProperties',     type: '*APProperties',    desc: 'Set when mode is AP' },
+      { name: 'ClientProperties', type: '*ClientProperties',desc: 'Set when mode is Client' },
+    ],
+  },
+  {
+    id: 'type-clientproperties', name: 'ClientProperties',
+    desc: 'IP and radio properties of the current client (station) connection.',
+    fields: [
+      { name: 'InterfaceName',  type: 'string',    desc: 'Interface name' },
+      { name: 'MacAddress',     type: 'string',    desc: 'MAC address' },
+      { name: 'State',          type: 'WiFiState', desc: 'Connection state' },
+      { name: 'Mtu',            type: 'int32',     desc: 'MTU' },
+      { name: 'Ssid',           type: 'string',    desc: 'Connected network SSID' },
+      { name: 'Bssid',          type: 'string',    desc: 'Connected AP BSSID' },
+      { name: 'Security',       type: 'string',    desc: 'Security type (e.g. "wpa2")' },
+      { name: 'SignalStrength',  type: 'int32',     desc: 'RSSI in dBm' },
+      { name: 'Channel',        type: 'int32',     desc: 'Radio channel' },
+      { name: 'Band',           type: 'string',    desc: '"2.4GHz" or "5GHz"' },
+      { name: 'DhcpEnable',     type: 'bool',      desc: 'True when DHCP is active' },
+      { name: 'Ipv4Address',    type: 'string',    desc: 'IPv4 address with prefix (CIDR)' },
+      { name: 'Ipv4Gateway',    type: 'string',    desc: 'Default IPv4 gateway' },
+      { name: 'Ipv4Dns',        type: '[]string',  desc: 'DNS servers' },
+    ],
+  },
+  {
+    id: 'type-approperties', name: 'APProperties',
+    desc: 'Properties of the active access point.',
+    fields: [
+      { name: 'InterfaceName',    type: 'string', desc: 'Interface name' },
+      { name: 'Ssid',             type: 'string', desc: 'AP SSID' },
+      { name: 'Security',         type: 'string', desc: 'Security type (e.g. "wpa2")' },
+      { name: 'Ipv4Address',      type: 'string', desc: 'AP IPv4 address' },
+      { name: 'Channel',          type: 'int32',  desc: 'Radio channel' },
+      { name: 'Band',             type: 'string', desc: '"2.4GHz" or "5GHz"' },
+      { name: 'Hidden',           type: 'bool',   desc: 'True if SSID is hidden' },
+      { name: 'Active',           type: 'bool',   desc: 'True if AP is currently active' },
+      { name: 'ConnectedClients', type: 'int32',  desc: 'Number of connected clients' },
+    ],
+  },
+  {
+    id: 'type-scannednetwork', name: 'ScannedNetwork',
+    desc: 'A Wi-Fi network found during a scan.',
+    fields: [
+      { name: 'Ssid',           type: 'string', desc: 'Network SSID' },
+      { name: 'Bssid',          type: 'string', desc: 'AP BSSID (MAC)' },
+      { name: 'Security',       type: 'string', desc: 'Security type (e.g. "wpa2")' },
+      { name: 'SignalStrength',  type: 'int32',  desc: 'RSSI in dBm' },
+      { name: 'Channel',        type: 'int32',  desc: 'Radio channel' },
+      { name: 'Band',           type: 'string', desc: '"2.4GHz" or "5GHz"' },
+      { name: 'Hidden',         type: 'bool',   desc: 'True if SSID is hidden' },
+    ],
+  },
+  {
+    id: 'type-wifimode', name: 'WiFiMode',
+    desc: 'Operating mode of a Wi-Fi interface.',
+    fields: [
+      { name: 'WIFI_MODE_UNKNOWN',   type: '0', desc: 'Unknown' },
+      { name: 'WIFI_MODE_AP',        type: '1', desc: 'Access Point only' },
+      { name: 'WIFI_MODE_CLIENT',    type: '2', desc: 'Client (station) only' },
+      { name: 'WIFI_MODE_AP_CLIENT', type: '3', desc: 'AP + Client simultaneously' },
+      { name: 'WIFI_MODE_DISABLED',  type: '4', desc: 'Disabled' },
+    ],
+  },
+  {
+    id: 'type-wifistate', name: 'WiFiState',
+    desc: 'Connection state of a Wi-Fi interface.',
+    fields: [
+      { name: 'WIFI_UNKNOWN',      type: '0',   desc: 'Unknown' },
+      { name: 'WIFI_UNMANAGED',    type: '10',  desc: 'Not managed by NetworkManager' },
+      { name: 'WIFI_UNAVAILABLE',  type: '20',  desc: 'Managed but not available (no carrier)' },
+      { name: 'WIFI_DISCONNECTED', type: '30',  desc: 'Disconnected' },
+      { name: 'WIFI_PREPARE',      type: '40',  desc: 'Preparing connection' },
+      { name: 'WIFI_CONFIG',       type: '50',  desc: 'Configuring' },
+      { name: 'WIFI_NEED_AUTH',    type: '60',  desc: 'Authentication required' },
+      { name: 'WIFI_IP_CONFIG',    type: '70',  desc: 'Configuring IP' },
+      { name: 'WIFI_IP_CHECK',     type: '80',  desc: 'Verifying IP configuration' },
+      { name: 'WIFI_SECONDARIES',  type: '90',  desc: 'Configuring secondary connections' },
+      { name: 'WIFI_ACTIVATED',    type: '100', desc: 'Connected' },
+      { name: 'WIFI_DEACTIVATING', type: '110', desc: 'Deactivating' },
+      { name: 'WIFI_FAILED',       type: '120', desc: 'Failed' },
+    ],
+  },
+  {
+    id: 'type-modelbackend', name: 'ModelBackend',
+    desc: 'Inference backend / model format.',
+    fields: [
+      { name: 'MODEL_BACKEND_UNSPECIFIED', type: '0', desc: 'Unspecified' },
+      { name: 'ONNX',                     type: '1', desc: 'ONNX Runtime' },
+      { name: 'TFLITE',                   type: '2', desc: 'TensorFlow Lite' },
+    ],
+  },
+  {
+    id: 'type-executionmode', name: 'ExecutionMode',
+    desc: 'Hardware execution target for inference.',
+    fields: [
+      { name: 'EXEC_CPU',          type: '0', desc: 'CPU (single/multi core)' },
+      { name: 'EXEC_GPU',          type: '1', desc: 'GPU / NPU delegate' },
+      { name: 'EXEC_HIGH_THREADS', type: '2', desc: 'CPU with maximum thread count' },
+    ],
+  },
+  {
+    id: 'type-tensordatatype', name: 'TensorDataType',
+    desc: 'Element type of a tensor buffer.',
+    fields: [
+      { name: 'TENSOR_FLOAT32', type: '0', desc: '4-byte little-endian IEEE 754, normalised [0, 1]' },
+      { name: 'TENSOR_UINT8',   type: '1', desc: '1-byte unsigned integer [0, 255]' },
+      { name: 'TENSOR_INT32',   type: '2', desc: '4-byte little-endian signed integer' },
+      { name: 'TENSOR_INT64',   type: '3', desc: '8-byte little-endian signed integer' },
+    ],
+  },
+  {
+    id: 'type-cameradeviceinfo', name: 'CameraDeviceInfo',
+    desc: 'Metadata for a V4L2 camera node.',
+    fields: [
+      { name: 'DeviceID',         type: 'string',   desc: 'Device path (e.g. "/dev/video0")' },
+      { name: 'Driver',           type: 'string',   desc: 'Kernel driver name' },
+      { name: 'Card',             type: 'string',   desc: 'Camera card / model name' },
+      { name: 'SupportedFormats', type: '[]string', desc: 'Pixel formats (e.g. "mjpeg", "yuyv")' },
+      { name: 'Resolutions',      type: '[]string', desc: 'Supported resolutions (e.g. "1280x720")' },
+    ],
+  },
+  {
+    id: 'type-captureimageresult', name: 'CaptureImageResult',
+    desc: 'A single captured frame returned by CaptureImage.',
+    fields: [
+      { name: 'ImageData', type: '[]byte', desc: 'Raw frame bytes (e.g. JPEG)' },
+      { name: 'Format',    type: 'string', desc: 'Pixel format of the data' },
+      { name: 'Timestamp', type: 'int64',  desc: 'Capture timestamp (Unix µs)' },
+    ],
+  },
+  {
+    id: 'type-streamframesrequest', name: 'StreamFramesRequest',
+    desc: 'Parameters for StreamFrames.',
+    fields: [
+      { name: 'DeviceId', type: 'string', desc: 'Camera device path (e.g. "/dev/video0")' },
+      { name: 'Fps',      type: 'int32',  desc: 'Requested frames per second' },
+      { name: 'Width',    type: 'int32',  desc: 'Frame width in pixels' },
+      { name: 'Height',   type: 'int32',  desc: 'Frame height in pixels' },
+    ],
+  },
+  {
+    id: 'type-frame', name: 'Frame',
+    desc: 'A single video frame received from StreamFrames.',
+    fields: [
+      { name: 'Data',      type: '[]byte', desc: 'Raw frame bytes' },
+      { name: 'Timestamp', type: 'int64',  desc: 'Capture timestamp (Unix µs)' },
+      { name: 'Width',     type: 'int32',  desc: 'Frame width in pixels' },
+      { name: 'Height',    type: 'int32',  desc: 'Frame height in pixels' },
+      { name: 'Format',    type: 'string', desc: 'Pixel format' },
+    ],
+  },
+  {
+    id: 'type-aimodel', name: 'AIModel',
+    desc: 'Handle to a loaded model. Returned by LoadModel / UploadAndLoadModel.',
+    fields: [
+      { name: 'Response', type: '*LoadModelResponse', desc: 'Tensor schema and metadata returned at load time' },
+    ],
+  },
+  {
+    id: 'type-loadmodelresponse', name: 'LoadModelResponse',
+    desc: 'Response from LoadModel / UploadAndLoadModel.',
+    fields: [
+      { name: 'ModelId',       type: 'string',       desc: 'Confirmed model ID' },
+      { name: 'Success',       type: 'bool',         desc: 'True on success' },
+      { name: 'Error',         type: 'ErrorInfo',    desc: 'Set on failure' },
+      { name: 'Inputs',        type: '[]*TensorInfo', desc: 'Input tensor schema' },
+      { name: 'Outputs',       type: '[]*TensorInfo', desc: 'Output tensor schema' },
+      { name: 'SkippedUpload', type: 'bool',         desc: 'True if model was already loaded' },
+    ],
+  },
+  {
+    id: 'type-modelinfo', name: 'ModelInfo',
+    desc: 'Metadata for a loaded model (returned by ListModels).',
+    fields: [
+      { name: 'ModelId',      type: 'string',      desc: 'Model identifier' },
+      { name: 'Version',      type: 'string',      desc: 'Model version string' },
+      { name: 'Backend',      type: 'ModelBackend', desc: 'Active backend' },
+      { name: 'LoadedAtUnix', type: 'int64',        desc: 'Unix timestamp of load' },
+    ],
+  },
+  {
+    id: 'type-ismodelloadedresponse', name: 'IsModelLoadedResponse',
+    desc: 'Response from IsModelLoaded.',
+    fields: [
+      { name: 'Loaded',  type: 'bool',         desc: 'True if the model is currently loaded' },
+      { name: 'Inputs',  type: '[]*TensorInfo', desc: 'Input tensor schema' },
+      { name: 'Outputs', type: '[]*TensorInfo', desc: 'Output tensor schema' },
+    ],
+  },
+  {
+    id: 'type-inferresponse', name: 'InferResponse',
+    desc: 'Result of a single inference pass.',
+    fields: [
+      { name: 'Success',      type: 'bool',              desc: 'True on success' },
+      { name: 'Error',        type: 'ErrorInfo',         desc: 'Set on failure' },
+      { name: 'OutputData',   type: '[]byte',            desc: 'Raw output tensor bytes' },
+      { name: 'OutputShape',  type: '[]int32',           desc: 'Output tensor shape' },
+      { name: 'NamedOutputs', type: 'map[string][]byte', desc: 'Named output tensors' },
+      { name: 'LatencyUs',    type: 'int64',             desc: 'Inference latency in microseconds' },
+    ],
+  },
+  {
+    id: 'type-tensorinfo', name: 'TensorInfo',
+    desc: 'Schema of a single input or output tensor.',
+    fields: [
+      { name: 'Name',  type: 'string',        desc: 'Tensor name' },
+      { name: 'Dtype', type: 'TensorDataType', desc: 'Element data type' },
+      { name: 'Shape', type: '[]int32',        desc: 'Tensor dimensions' },
+    ],
+  },
+  {
+    id: 'type-loglevel', name: 'LogLevel',
+    desc: 'Log severity level enum used by DevelopmentManager.',
+    fields: [
+      { name: 'LOG_LEVEL_DEBUG',   type: '0', desc: '' },
+      { name: 'LOG_LEVEL_INFO',    type: '1', desc: '' },
+      { name: 'LOG_LEVEL_WARNING', type: '2', desc: '' },
+      { name: 'LOG_LEVEL_ERROR',   type: '3', desc: '' },
+      { name: 'LOG_LEVEL_FATAL',   type: '4', desc: '' },
+    ],
+  },
+  {
+    id: 'type-pwmchannel', name: 'PwmChannel',
+    desc: 'Identifies a PWM channel.',
+    fields: [
+      { name: 'Channel', type: 'uint32', desc: 'Channel index' },
+      { name: 'Name',    type: 'string', desc: 'Human-readable name' },
+    ],
+  },
+  {
+    id: 'type-pwmproperties', name: 'PwmProperties',
+    desc: 'Current state and configuration of a PWM channel.',
+    fields: [
+      { name: 'Channel',     type: 'PwmChannel', desc: '' },
+      { name: 'Enabled',     type: 'bool',       desc: '' },
+      { name: 'DutyCycle',   type: 'float64',    desc: '0.0–1.0' },
+      { name: 'FrequencyHz', type: 'float64',    desc: '' },
+    ],
+  },
+  {
+    id: 'type-vpnprofile', name: 'VpnProfile',
+    desc: 'VPN profile configuration passed to ApplyProfile.',
+    fields: [
+      { name: 'ProfileId',   type: 'string',      desc: 'Empty = server assigns' },
+      { name: 'DisplayName', type: 'string',       desc: '' },
+      { name: 'Provider',    type: 'VpnProvider',  desc: '' },
+      { name: 'ConfigData',  type: '[]byte',       desc: 'Raw .conf / .ovpn file content' },
+      { name: 'AutoConnect', type: 'bool',         desc: '' },
+      { name: 'SecretRef',   type: 'string',       desc: 'Optional credential reference' },
+    ],
+  },
+  {
+    id: 'type-registerservicerequest', name: 'RegisterServiceRequest',
+    desc: 'Full registration payload passed to AppHubManager.RegisterService().',
+    fields: [
+      { name: 'Host',         type: 'string',       desc: '' },
+      { name: 'Port',         type: 'int32',        desc: '' },
+      { name: 'Routes',       type: '[]*Route',     desc: 'Path prefixes to proxy' },
+      { name: 'Health',       type: '*HealthCheck', desc: 'Health check configuration' },
+      { name: 'ExposureMode', type: 'string',       desc: 'Visibility scope' },
+    ],
+  },
+  {
+    id: 'type-firewallprotocol', name: 'FirewallProtocol',
+    desc: 'Protocol filter enum used in firewall rules.',
+    fields: [
+      { name: 'PROTO_ANY',  type: '0', desc: '' },
+      { name: 'PROTO_TCP',  type: '1', desc: '' },
+      { name: 'PROTO_UDP',  type: '2', desc: '' },
+      { name: 'PROTO_ICMP', type: '3', desc: '' },
+    ],
+  },
+  {
+    id: 'type-zonepolicy', name: 'ZonePolicy',
+    desc: 'Default zone policy or rule action enum.',
+    fields: [
+      { name: 'POLICY_ACCEPT', type: '0', desc: '' },
+      { name: 'POLICY_DROP',   type: '1', desc: '' },
+      { name: 'POLICY_REJECT', type: '2', desc: '' },
+    ],
+  },
+  {
+    id: 'type-zonerequest', name: 'ZoneRequest',
+    desc: 'Firewall zone definition (as returned by ListZones).',
+    fields: [
+      { name: 'Name',         type: 'string',          desc: 'Zone name (e.g. "lan", "wan")' },
+      { name: 'Interfaces',   type: '[]string',         desc: 'Network interfaces assigned to this zone' },
+      { name: 'InputPolicy',  type: 'ZonePolicy',       desc: 'POLICY_ACCEPT | POLICY_DROP | POLICY_REJECT' },
+      { name: 'OutputPolicy', type: 'ZonePolicy',       desc: 'POLICY_ACCEPT | POLICY_DROP | POLICY_REJECT' },
+      { name: 'Masquerade',   type: 'bool',             desc: 'Enable NAT masquerade (typically wan only)' },
+    ],
+  },
+  {
+    id: 'type-firewallrule', name: 'FirewallRule',
+    desc: 'A firewall traffic rule as returned by ListRules.',
+    fields: [
+      { name: 'Id',       type: 'string',          desc: 'Server-generated rule ID' },
+      { name: 'SrcZone',  type: 'string',          desc: 'Source zone (empty = any)' },
+      { name: 'DstZone',  type: 'string',          desc: 'Destination zone (empty = any)' },
+      { name: 'Protocol', type: 'FirewallProtocol', desc: 'PROTO_ANY | PROTO_TCP | PROTO_UDP | PROTO_ICMP' },
+      { name: 'SrcIp',    type: 'string',          desc: 'Source IP/CIDR (empty = any)' },
+      { name: 'DestPort', type: 'int32',           desc: 'Destination port (0 = any)' },
+      { name: 'Action',   type: 'ZonePolicy',      desc: 'POLICY_ACCEPT | POLICY_DROP | POLICY_REJECT' },
+      { name: 'Comment',  type: 'string',          desc: 'Optional description' },
+    ],
+  },
+  {
+    id: 'type-vpnevent', name: 'VPNEvent',
+    desc: 'Tunnel event received via WatchEvents. Payload is one of Tunnel or ProviderEvent.',
+    fields: [
+      { name: 'TsUnixMs',      type: 'int64',                desc: 'Event timestamp (Unix ms)' },
+      { name: 'ProfileId',     type: 'string',               desc: '' },
+      { name: 'SessionId',     type: 'string',               desc: '' },
+      { name: 'Provider',      type: 'VpnProvider',          desc: 'WIREGUARD | OPENVPN | IPSEC | CUSTOM' },
+      { name: 'Tunnel',        type: 'TunnelStateChanged',   desc: 'Set when tunnel state changes' },
+      { name: 'ProviderEvent', type: 'ProviderNotification', desc: 'Set for provider-specific events' },
+    ],
+  },
+  {
+    id: 'type-vpnprovider', name: 'VpnProvider',
+    desc: 'VPN provider / protocol enum.',
+    fields: [
+      { name: 'VPN_PROVIDER_WIREGUARD', type: '1', desc: '' },
+      { name: 'VPN_PROVIDER_OPENVPN',   type: '2', desc: '' },
+      { name: 'VPN_PROVIDER_IPSEC',     type: '3', desc: '' },
+      { name: 'VPN_PROVIDER_CUSTOM',    type: '15', desc: '' },
+    ],
+  },
+  {
+    id: 'type-tunnelstatechanged', name: 'TunnelStateChanged',
+    desc: 'Payload of a VPNEvent when the tunnel state changes.',
+    fields: [
+      { name: 'NewState', type: 'string', desc: 'DOWN | CONNECTING | UP | DEGRADED | ERROR' },
+      { name: 'Message',  type: 'string', desc: 'Optional human-readable detail' },
+    ],
+  },
+  {
+    id: 'type-providernotification', name: 'ProviderNotification',
+    desc: 'Payload of a VPNEvent for provider-specific notifications.',
+    fields: [
+      { name: 'Kind',    type: 'string', desc: 'Provider-defined event kind' },
+      { name: 'Details', type: 'string', desc: 'Provider-defined event details' },
+    ],
+  },
+];
+
+const typeMap = {};
+types.forEach(t => { typeMap[t.name] = t.id; });
+
+function linkType(text) {
+  if (!text) return text;
+  return text.replace(/[A-Z][a-zA-Z0-9_]*/g, m => typeMap[m] ? `<a href="#${typeMap[m]}" class="type-link">${m}</a>` : m);
+}
+
+// ── Versions ──────────────────────────────────────────────────────────────────
+// major = API proto version (26), middle = proto additions, patch = SDK-only changes
+
+const versions = [
+  { value: '26.0.1', label: '26.0.1', latest: true },
+];
+
+function buildVersionSelect() {
+  const sel = document.getElementById('version-select');
+  versions.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.value;
+    opt.textContent = v.latest ? `${v.label} (latest)` : v.label;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+let lang = 'go';
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+  document.querySelectorAll('.code-block, .sig-block').forEach(b => b.classList.toggle('visible', b.dataset.lang === l));
+}
+
+function buildSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  services.forEach(svc => {
+    const hdr = document.createElement('div');
+    hdr.className = 'sidebar-section';
+    hdr.innerHTML = `<a href="#${svc.id}"><span>${spacedName(svc.name)}</span><span class="chevron">&#9654;</span></a>`;
+
+    const methods = document.createElement('div');
+    methods.className = 'sidebar-methods';
+    methods.style.display = 'none';
+    svc.methods.forEach(m => {
+      if (m.group) return; // group dividers don't appear in sidebar
+      const a = document.createElement('a');
+      a.href = '#' + m.id;
+      a.textContent = m.name;
+      a.dataset.id = m.id;
+      methods.appendChild(a);
+    });
+
+    hdr.querySelector('a').addEventListener('click', e => {
+      e.preventDefault();
+      const isOpen = methods.style.display !== 'none';
+      methods.style.display = isOpen ? 'none' : 'block';
+      hdr.classList.toggle('open', !isOpen);
+      if (!isOpen) document.getElementById(svc.id)?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
+
+    nav.appendChild(hdr);
+    nav.appendChild(methods);
+  });
+
+  const typesSec = document.createElement('div');
+  typesSec.innerHTML = `<div class="sidebar-types-hdr">Types</div>`;
+  types.forEach(t => {
+    const a = document.createElement('a');
+    a.href = '#' + t.id;
+    a.textContent = t.name;
+    a.dataset.id = t.id;
+    typesSec.appendChild(a);
+  });
+  nav.appendChild(typesSec);
+}
+
+function buildContent() {
+  const root = document.getElementById('content');
+  services.forEach(svc => {
+    const block = document.createElement('div');
+    block.className = 'service-block';
+    block.id = svc.id;
+    const permHtml = svc.permission ? `<div class="service-permission"><span style="font-family:var(--font);font-weight:600;color:#78350f">Permission</span>${svc.permission}</div>` : '';
+    const checkedDot = svc.checked ? `<span class="service-checked" title="Reviewed"></span>` : '';
+    block.innerHTML = `<h2>${spacedName(svc.name)}${checkedDot}</h2><p class="service-desc">${svc.desc}</p>${permHtml}`;
+
+    svc.methods.forEach(m => {
+      if (m.group) {
+        const hdr = document.createElement('div');
+        hdr.className = 'method-group-hdr';
+        hdr.textContent = m.group;
+        block.appendChild(hdr);
+        return;
+      }
+      const card = document.createElement('div');
+      card.className = 'method-card';
+      card.id = m.id;
+
+      const pRows = m.params.map(p =>
+        `<tr><td>${p.name}</td><td>${linkType(p.type)||''}</td><td>${p.desc||''}</td></tr>`
+      ).join('');
+      const rRows = m.returns.map(r =>
+        `<tr><td>${linkType(r.name)}</td><td>${linkType(r.type)||''}</td><td>${r.desc||''}</td></tr>`
+      ).join('');
+
+      const hasSig = Object.values(m.code).some(c => c && typeof c === 'object');
+      const sigBlocks = hasSig ? Object.entries(m.code).map(([l, c]) => {
+        const s = (c && typeof c === 'object') ? c.sig : '';
+        return `<pre class="sig-block${l===lang?' visible':''}" data-lang="${l}"><code>${s}</code></pre>`;
+      }).join('') : '';
+      const codeBlocks = Object.entries(m.code).map(([l, c]) => {
+        const body = (c && typeof c === 'object') ? c.example : c;
+        return `<pre class="code-block${l===lang?' visible':''}" data-lang="${l}"><code>${body}</code></pre>`;
+      }).join('');
+
+      card.innerHTML = `
+        <div class="method-header">
+          <span class="method-name">${m.name}</span>
+          <span class="method-desc">${m.desc}</span>
+        </div>
+        <div class="method-body">
+          ${hasSig ? `<div class="tbl-label">Signature</div>${sigBlocks}` : ''}
+          ${m.params.length ? `<div class="tbl-label" style="${hasSig?'margin-top:18px':''}">Parameters</div>
+          <table><thead><tr><th>Name</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>${pRows}</tbody></table>` : ''}
+          <div class="tbl-label">Returns</div>
+          <table><thead><tr><th>Name</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>${rRows}</tbody></table>
+          <div class="tbl-label" style="margin-top:14px">Example</div>
+          ${codeBlocks}
+        </div>`;
+
+      block.appendChild(card);
+    });
+    root.appendChild(block);
+  });
+
+  const typesBlock = document.createElement('div');
+  typesBlock.className = 'service-block';
+  typesBlock.id = 'types-section';
+  typesBlock.innerHTML = `<h2>Types</h2><p class="service-desc">Complex objects returned or accepted by the SDK methods.</p>`;
+
+  types.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'method-card';
+    card.id = t.id;
+
+    const fRows = t.fields.map(f =>
+      `<tr><td>${f.name}</td><td style="font-family:var(--mono);font-size:12px;color:#7c3aed">${linkType(f.type)}</td><td>${f.desc}</td></tr>`
+    ).join('');
+
+    card.innerHTML = `
+      <div class="method-header">
+        <span class="method-name">${t.name}</span>
+        <span class="method-desc">${t.desc}</span>
+      </div>
+      <div class="method-body">
+        <div class="tbl-label">Fields</div>
+        <table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>${fRows}</tbody></table>
+      </div>`;
+
+    typesBlock.appendChild(card);
+  });
+  root.appendChild(typesBlock);
+}
+
+
+function syncSidebar() {
+  const links = [...document.querySelectorAll('#sidebar-nav a[data-id]')];
+  let active = null;
+  links.forEach(a => {
+    if (!a.offsetParent) return; // skip hidden elements (collapsed managers)
+    const el = document.getElementById(a.dataset.id);
+    if (el && el.getBoundingClientRect().top <= 72) active = a;
+  });
+  links.forEach(a => a.classList.remove('active'));
+  if (active) active.classList.add('active');
+}
+
+buildVersionSelect();
+buildSidebar();
+buildContent();
+
+document.querySelectorAll('.lang-btn').forEach(b =>
+  b.addEventListener('click', () => setLang(b.dataset.lang))
+);
+document.getElementById('main').addEventListener('scroll', syncSidebar, { passive: true });
+window.addEventListener('scroll', syncSidebar, { passive: true });
+
+// Hamburger / sidebar overlay
+(function() {
+  var btn = document.getElementById('hamburger');
+  var sb  = document.getElementById('sidebar');
+  var ov  = document.getElementById('overlay');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    sb.classList.toggle('open');
+    ov.classList.toggle('visible');
+  });
+  ov.addEventListener('click', function() {
+    sb.classList.remove('open');
+    ov.classList.remove('visible');
+  });
+  // Close sidebar when a nav link is tapped on mobile
+  document.getElementById('sidebar-nav').addEventListener('click', function(e) {
+    if (e.target.tagName === 'A' && window.innerWidth <= 768) {
+      sb.classList.remove('open');
+      ov.classList.remove('visible');
+    }
+  });
+})();
+</script>
+</body>
+</html>

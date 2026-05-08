@@ -1,0 +1,11 @@
+{
+  "name": "RPI 4-Channel Relay Controller - Keyestudio",
+  "version": "1.0.5",
+  "description": "Web UI, Modbus TCP server and MQTT HA Client for Keyestudio KS0212 4-channel relay shield (Raspberry Pi)",
+  "entry_point": "rpi-4ch",
+  "permissions": [
+    "SystemService/*",
+    "GpioService/*",
+    "AppHubService/*"
+  ]
+}

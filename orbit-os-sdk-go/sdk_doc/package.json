@@ -1,0 +1,11 @@
+{
+  "name": "orbit-os-sdk-docs",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "jsdom": "^25.0.0"
+  }
+}
