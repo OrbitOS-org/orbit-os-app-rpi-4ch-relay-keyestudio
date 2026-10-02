@@ -23,7 +23,7 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 
-	"github.com/OrbitOS-org/sdk-go/v26/logger"
+	"github.com/OrbitOS-org/orbit-os-sdk-go/v26/logger"
 )
 
 type mqttManager struct {

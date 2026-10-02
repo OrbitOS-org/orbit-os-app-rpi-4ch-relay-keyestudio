@@ -41,9 +41,9 @@ import (
 	"sync"
 	"time"
 
-	orbitclient "github.com/OrbitOS-org/sdk-go/v26/client"
-	"github.com/OrbitOS-org/sdk-go/v26/logger"
-	"github.com/OrbitOS-org/sdk-go/v26/metadata"
+	orbitclient "github.com/OrbitOS-org/orbit-os-sdk-go/v26/client"
+	"github.com/OrbitOS-org/orbit-os-sdk-go/v26/logger"
+	"github.com/OrbitOS-org/orbit-os-sdk-go/v26/metadata"
 )
 
 //go:embed metadata.json

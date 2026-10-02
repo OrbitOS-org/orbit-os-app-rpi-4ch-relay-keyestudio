@@ -1,3 +1,5 @@
+github.com/OrbitOS-org/orbit-os-sdk-go/v26 v26.0.3 h1:O5VTOM09QBQXPKFxYerdGsyFo4SilEZyLWV3Hlm0Pus=
+github.com/OrbitOS-org/orbit-os-sdk-go/v26 v26.0.3/go.mod h1:3CsHlUn4WlB6IyACIiV6N0GX36vQKfX2FsX8IGXSFaI=
 github.com/eclipse/paho.mqtt.golang v1.5.1 h1:/VSOv3oDLlpqR2Epjn1Q7b2bSTplJIeV2ISgCl2W7nE=
 github.com/eclipse/paho.mqtt.golang v1.5.1/go.mod h1:1/yJCneuyOoCOzKSsOTUc0AJfpsItBGWvYpBLimhArU=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=

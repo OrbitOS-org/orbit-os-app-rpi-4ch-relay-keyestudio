@@ -1,9 +1,9 @@
-module rpi_4ch_relay_keyestudio
+module github.com/OrbitOS-org/orbit-os-app-rpi-4ch-relay-keyestudio
 
 go 1.25.4
 
 require (
-	github.com/OrbitOS-org/sdk-go/v26 v26.0.1
+	github.com/OrbitOS-org/orbit-os-sdk-go/v26 v26.0.3
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 )
 
@@ -17,5 +17,3 @@ require (
 	google.golang.org/grpc v1.77.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
-
-replace github.com/OrbitOS-org/sdk-go/v26 => ./orbit-os-sdk-go

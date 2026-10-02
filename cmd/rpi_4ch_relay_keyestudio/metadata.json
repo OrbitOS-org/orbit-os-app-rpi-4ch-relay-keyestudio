@@ -7,5 +7,6 @@
     "SystemService/*",
     "GpioService/*",
     "AppHubService/*"
-  ]
+  ],
+  "package_id": "org.orbit-os.keyestudio.rpi-4ch"
 }
