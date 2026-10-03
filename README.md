@@ -38,6 +38,8 @@ An [Orbit OS](https://www.orbit-os.org/?ref=github-rpi4ch) app for the [Keyestud
 
 **From source — recommended: [Orbit Studio](https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio) (VS Code):**
 
+You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extension and **[Go](https://go.dev/dl/) 1.25 or newer** installed (`go` on your PATH).
+
 1. Clone the repository and open the folder in VS Code with the Orbit Studio extension:
    ```bash
    git clone https://github.com/OrbitOS-org/orbit-os-app-rpi-4ch-relay-keyestudio
