@@ -36,13 +36,17 @@ An [Orbit OS](https://www.orbit-os.org/?ref=github-rpi4ch) app for the [Keyestud
 
 **From the Orbit OS Store (recommended):** install [RPI 4-Channel Relay Controller](https://store.orbit-os.org/app/rpi-4ch?ref=github-rpi4ch) on your device in one click. No build required.
 
-**From source:**
-```bash
-git clone https://github.com/OrbitOS-org/orbit-os-app-rpi-4ch-relay-keyestudio
-cd orbit-os-app-rpi-4ch-relay-keyestudio
-go build ./cmd/rpi_4ch_relay_keyestudio
-```
-Package and deploy it as a signed `.orb` with [Orbit Studio](https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio) (VS Code).
+**From source — recommended: [Orbit Studio](https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio) (VS Code):**
+
+1. Clone the repository and open the folder in VS Code with the Orbit Studio extension:
+   ```bash
+   git clone https://github.com/OrbitOS-org/orbit-os-app-rpi-4ch-relay-keyestudio
+   code orbit-os-app-rpi-4ch-relay-keyestudio
+   ```
+2. In the Orbit sidebar, run **Add / Update SDK** and set your device's IP.
+3. Use **Run** to try it live against a device in Developer Mode, then **Build + Deploy** to install the signed `.orb`.
+
+**Without Orbit Studio:** `go build ./cmd/rpi_4ch_relay_keyestudio` builds the binary with the published SDK module — use Orbit Studio to package and sign the `.orb`.
 
 ## Usage
 
@@ -71,7 +75,7 @@ This project follows the [Orbit Studio](https://marketplace.visualstudio.com/ite
 | `cmd/rpi_4ch_relay_keyestudio/orb/icon.svg` | launcher / Store icon |
 | `orbit.project.json` | Orbit Studio project settings (your device IP goes in the git-ignored `orbit.project.local.json`) |
 
-- Open the folder in VS Code with Orbit Studio, **Add / Update SDK** (creates the local `orbit-os-sdk-go/` copy and `go.work`, both git-ignored), then **Run** against a device in Developer Mode, or **Build + Deploy**.
+- **Recommended workflow:** open the folder in VS Code with Orbit Studio, **Add / Update SDK** (creates the local `orbit-os-sdk-go/` copy and `go.work`, both git-ignored), then **Run** against a device in Developer Mode, or **Build + Deploy**.
 - Without Orbit Studio, `go build` uses the published SDK module [`github.com/OrbitOS-org/orbit-os-sdk-go/v26`](https://pkg.go.dev/github.com/OrbitOS-org/orbit-os-sdk-go/v26).
 - Development TLS certificates live in `cmd/certs/grpc/` and are never committed.
 
