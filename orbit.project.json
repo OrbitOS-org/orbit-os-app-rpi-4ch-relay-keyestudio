@@ -4,7 +4,6 @@
   "certsDir": "cmd/certs/grpc",
   "packagesDir": ".orbit",
   "expectedOrbBasename": "rpi_4ch_relay_keyestudio_v0.1.0.orb",
-  "sdkDevPackageNaming": false,
   "sdkVersion": "v26.0.3",
   "name": "orbit-os-app-rpi-4ch-relay-keyestudio"
 }
