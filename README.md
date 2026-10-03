@@ -8,8 +8,6 @@
 
 An [Orbit OS](https://www.orbit-os.org/?ref=github-rpi4ch) app for the [Keyestudio KS0212](https://docs.keyestudio.com/projects/KS0212/en/latest/) 4-channel relay shield. Install it from the Store, open its page in the Orbit OS AppHub and switch relays from any browser — or integrate them with PLCs, SCADA or Home Assistant.
 
-<a href="https://store.orbit-os.org/app/rpi-4ch?ref=github-rpi4ch"><img src="https://www.orbit-os.org/images/badges/get-it-on-orbit-os-store@3x.png" width="200" alt="Get it on Orbit OS Store"></a>
-
 ![RPI 4-Channel Relay Controller in the Orbit OS Store](docs/store-screenshot.png)
 
 ## Features
@@ -35,6 +33,8 @@ An [Orbit OS](https://www.orbit-os.org/?ref=github-rpi4ch) app for the [Keyestud
 ## Install
 
 **From the Orbit OS Store (recommended):** install [RPI 4-Channel Relay Controller](https://store.orbit-os.org/app/rpi-4ch?ref=github-rpi4ch) on your device in one click. No build required.
+
+<a href="https://store.orbit-os.org/app/rpi-4ch?ref=github-rpi4ch"><img src="https://www.orbit-os.org/images/badges/get-it-on-orbit-os-store@3x.png" width="200" alt="Get it on Orbit OS Store"></a>
 
 **From source — recommended: [Orbit Studio](https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio) (VS Code):**
 
